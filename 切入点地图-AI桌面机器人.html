@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>切入点地图 · AI 桌面机器人市场判断</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f4efe6;
+    --ink:#181410;
+    --muted:#7a7166;
+    --rule:#d8cfc0;
+    --accent:#b63b1c;
+    --teal:#1e5752;
+    --white:#fbf8f2;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;font-size:16px;line-height:1.65}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 26px}
+  h1,h2,h3,.serif{font-family:"Noto Serif SC",serif}
+  h1{font-size:clamp(34px,5.5vw,54px);line-height:1.06;margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+  .kicker{color:var(--accent);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  .lead{font-size:18px;max-width:38em;margin:0 0 18px}
+  .muted{color:var(--muted)}
+  .small{font-size:13.5px}
+  .tiny{font-size:12px;color:var(--muted);line-height:1.6}
+  header{padding:30px 0 22px;border-bottom:1px solid var(--rule)}
+  .mast-top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 24px;padding-top:14px;font-size:12.5px;color:var(--muted)}
+  main{padding:36px 0 10px}
+  .layout{display:grid;grid-template-columns:1fr 320px;gap:26px;align-items:start}
+  .map-hold{position:relative}
+  .map{
+    position:relative;width:100%;aspect-ratio:1/1;background:var(--white);
+    border:1px solid var(--rule);user-select:none;touch-action:none;overflow:hidden;
+  }
+  .axis{position:absolute;background:var(--rule)}
+  .axis.h{left:0;right:0;top:50%;height:1px}
+  .axis.v{top:0;bottom:0;left:50%;width:1px}
+  .alab{position:absolute;font-size:11px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;pointer-events:none}
+  .alab.tl{top:10px;left:12px}.alab.tr{top:10px;right:12px;text-align:right}
+  .alab.bl{bottom:10px;left:12px}.alab.br{bottom:10px;right:12px;text-align:right}
+  .alab.mid{top:50%;left:50%;transform:translate(-50%,-50%);color:var(--rule);font-size:11px}
+  .dot{
+    position:absolute;transform:translate(-50%,-50%);cursor:grab;
+    display:flex;flex-direction:column;align-items:center;gap:5px;
+    transition:filter 200ms;
+  }
+  .dot:active{cursor:grabbing}
+  .dot .pin{
+    width:44px;height:44px;border-radius:50%;background:var(--ink);color:var(--paper);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Noto Serif SC",serif;font-size:13px;font-weight:600;
+    border:2px solid var(--paper);outline:1px solid var(--ink);
+  }
+  .dot .tag{font-size:11.5px;color:var(--ink);background:var(--paper);padding:1px 7px;border:1px solid var(--rule);white-space:nowrap}
+  .dot.drag{filter:drop-shadow(0 6px 10px rgba(24,20,16,.25))}
+  .dot .pin.lamp{background:var(--white);color:var(--muted);outline:1px solid var(--rule)}
+  .dot .pin.lamp+.tag{color:var(--muted)}
+  .dot.moved .pin{outline:2px dashed var(--accent)}
+  .verdict{
+    position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+    max-width:82%;background:var(--ink);color:var(--paper);
+    padding:10px 16px;font-size:13.5px;line-height:1.55;display:none;
+  }
+  .verdict.show{display:block}
+  .verdict b{color:#f0b7a4}
+  .reset{margin-top:12px;background:transparent;border:1px solid var(--ink);color:var(--ink);font-family:inherit;font-size:13px;padding:8px 14px;cursor:pointer}
+  .reset:hover{background:var(--ink);color:var(--paper)}
+  .side .card{background:var(--white);border:1px solid var(--rule);padding:18px}
+  .side h3{font-size:17px;margin:0 0 6px}
+  .opp{border-left:3px solid var(--accent);padding:2px 0 2px 14px;margin:14px 0}
+  .opp .who{font-family:"Noto Serif SC",serif;font-size:19px;font-weight:600}
+  .opp .line{margin-top:8px;font-size:14px}
+  .opp .line b{color:var(--accent)}
+  .opp .no{margin-top:10px;padding-top:10px;border-top:1px dashed var(--rule);font-size:13.5px;color:var(--muted)}
+  .opp .no b{color:var(--ink)}
+  .qbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+  .qbtn{border:1px solid var(--rule);background:var(--white);font-family:inherit;font-size:12.5px;padding:9px 8px;cursor:pointer;color:var(--ink);text-align:left}
+  .qbtn:hover,.qbtn.on{border-color:var(--accent);color:var(--accent)}
+  .thesis{margin-top:20px;background:var(--ink);color:var(--paper);padding:18px}
+  .thesis .serif{font-size:19px;line-height:1.5;margin:0}
+  .thesis .tiny{color:#a89e90;margin-top:10px}
+  footer{padding:30px 0 50px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule);margin-top:36px}
+  .hint{position:absolute;top:14px;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);background:var(--paper);border:1px dashed var(--rule);padding:5px 12px;pointer-events:none;transition:opacity 600ms}
+  @media(max-width:860px){.layout{grid-template-columns:1fr}}
+  @media print{
+    body{background:#fff}.reset,.hint{display:none}
+    .map{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mast-top"><span>独立求职作品 · 市场判断</span><span>2026.08.30</span></div>
+    <p class="kicker">Entry Point Map · AI Desktop Robot</p>
+    <h1>切入点地图</h1>
+    <p class="lead">AI 桌面机器人不是一片蓝海，是一张已经站了人的地图。把六台产品拖一拖，空出来的位置，就是我建议做的产品。</p>
+    <div class="meta">
+      <div>作者：新闻学本科 · 大四</div>
+      <div>岗位：AI 产品经理实习</div>
+      <div>方法：两条轴 · 六个坐标 · 四个空格</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="layout">
+
+      <div class="map-hold">
+        <div class="map" id="map">
+          <div class="axis h"></div>
+          <div class="axis v"></div>
+          <div class="alab tl">一屋子人用</div>
+          <div class="alab tr">一屋子人用</div>
+          <div class="alab bl">一个人用</div>
+          <div class="alab br">一个人用</div>
+          <div class="alab mid">← 工具　|　陪伴 →</div>
+          <div class="hint" id="hint">圆点可以拖 · 点右侧空格看机会</div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+        <button class="reset" id="reset">把地图放回真实位置</button>
+        <p class="tiny" style="margin-top:10px">坐标是基于公开资料的作者判断，非厂商数据。拖动任意一台产品，地图会告诉你它变成了什么。</p>
+      </div>
+
+      <div class="side">
+        <div class="card">
+          <p class="kicker">机会卡</p>
+          <h3 id="oppTitle">点一个空格</h3>
+          <div class="opp" id="oppBody">
+            <p class="small muted" style="margin:0">四个象限的空白处，各藏着一张产品卡。选一个看。</p>
+          </div>
+          <div class="qbtns" id="qbtns"></div>
+        </div>
+
+        <div class="thesis">
+          <p class="serif" id="thesisText">地图上最挤的是「一个人的陪伴」，最贵的教训是「一屋子的陪伴」。我的切入点在左下：一个人的、先有用、再长感情的桌面机器人。</p>
+          <p class="tiny">理由写在机会卡里。这个判断可以被挑战——它本来就是用来被挑战的。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    《切入点地图》独立作品 · 用于实习投递 · 产品坐标与机会判断均为作者基于公开资料的分析，不代表任何厂商数据或公司内部结论。
+  </div>
+</footer>
+
+<script>
+/* ============ DATA ============ */
+var PRODUCTS = [
+  {id:"tmall", name:"天猫精灵", short:"天猫", x:18, y:74, note:"纯工具，一屋子人用。它证明了「有用」能进家门，也证明了「有用」留不住感情——没人会给音箱办葬礼。"},
+  {id:"vector", name:"Vector", short:"Vec", x:52, y:70, note:"站在正中间，所以死过一次：工具不够强，陪伴不够深。被收购后靠订阅续命。中间地带是最危险的位置。"},
+  {id:"emo", name:"EMO", short:"EMO", x:78, y:68, note:"一个人的陪伴，工位场景。情绪引擎上千种表情，但它不出门——桌面是它的全世界，也是它的天花板。"},
+  {id:"moxie", name:"Moxie", short:"Mox", x:84, y:30, note:"一屋子的陪伴，儿童场景。情感设计最深，死得最惨：全云架构，公司一倒，799 美元变砖。陪伴越深，停服越残忍。"},
+  {id:"loona", name:"Loona", short:"Loo", x:66, y:26, note:"一屋子的陪伴，会跑。移动让它像宠物，也让它贵、吵、会被家具困住。家庭场景的入场券是耐用，不是聪明。"},
+  {id:"lamp", name:"普通台灯", short:"台灯", x:12, y:88, lamp:true, note:"对照组。零智能，零陪伴，但人人买、从不坏、不用解释。任何桌面机器人都要先回答：我比它多出来的，值不值 30 倍差价。"}
+];
+
+var VERDICTS = [
+  {cond:function(x,y){return x<35 && y>55}, text:"你把它拖向了<b>工具区</b>。那它的对手就变成 99 元的音箱和 0 元的手机语音助手——这场仗桌面机器人赢不了。"},
+  {cond:function(x,y){return x>65 && y>55}, text:"你把它拖向了<b>深度陪伴</b>。那它就必须回答 Moxie 没答好的题：公司倒闭那天，它怎么办。答不出，就别把感情做这么深。"},
+  {cond:function(x,y){return x>35 && x<65}, text:"你把它拖到了<b>正中间</b>。Vector 就站在这里——工具不够强，陪伴不够深，死过一次。中间不是平衡，是两头不靠。"},
+  {cond:function(x,y){return y<45}, text:"你把它拖向了<b>一屋子人</b>。那耐用、安全、孩子拽不坏就成了第一优先级，情感设计反而要往后排。家庭场景先过硬件关，才轮到灵魂。"}
+];
+
+var OPPORTUNITIES = [
+  {id:"q1", label:"左下空格", title:"一个人的、先有用再长感情的", 
+   who:"独居青年，每天坐在同一张桌子前 8 小时以上。",
+   line:"第一句开场白不是「你好我是助手」，而是<b>「你昨天那杯咖啡，今天还喝吗」</b>——先证明它记得，再谈陪伴。",
+   why:"为什么现在能进：EMO 证明了桌面陪伴有人买单，但它的对话 30 秒见底；大模型成本这两年降了一个数量级，「记得你」这件事第一次变得便宜。",
+   no:"第一年<b>不做</b>：不做全屋移动、不做儿童、不做开放平台。守住一张桌子，把「被记得」做穿。"},
+  {id:"q2", label:"右上空格", title:"一屋子人的、有分寸的陪伴",
+   who:"三代同堂的家庭，客厅是战场也是客厅。",
+   line:"第一句开场白是<b>对每个人不一样的</b>——对孩子蹲下来，对老人放慢语速。家庭陪伴的核心不是爱更多，是分寸。",
+   why:"为什么现在能进：Loona 教会了市场「机器人可以是家庭成员」，Moxie 的葬礼教会了市场「别把孩子的心交给云」。两个教训都刚发生，窗口开着。",
+   no:"第一年<b>不做</b>：不做深度儿童情感陪伴——那是 Moxie 的坟。先做全家都能用的轻陪伴，把信任攒够。"},
+  {id:"q3", label:"左上空格", title:"一屋子人的工具，但有一张脸",
+   who:"小餐馆、民宿、小公司前台——2B 的第一单。",
+   line:"它不需要被喜欢，只需要<b>比一个没有脸的屏幕少让人烦躁</b>。迎宾、指路、排队叫号，做完就退到一边。",
+   why:"为什么现在能进：2C 陪伴要打情感牌，慢；2B 工具只要算得过账，快。而且 JD 里写了客户对接——这是能最快见到真实用户反馈的位置。",
+   no:"第一年<b>不做</b>：不给它加「个性」。前台机器人一旦开始撒娇，就是灾难。工具区的纪律是克制。"},
+  {id:"q4", label:"右下空格", title:"一个人的深度陪伴，但离线能活",
+   who:"空巢老人，或任何「需要被记得，但子女不在身边」的人。",
+   line:"它的核心功能只有一个：<b>每天主动提起一件你们一起经历过的事</b>。不是聊天，是记得。",
+   why:"为什么现在能进：这是讣告馆那张地图的终点——Moxie 死了、Jibo 死了，用户已经被教育过「云会带走它」。谁能第一个承诺「我的人设离线能活」，谁就接住这批被伤过的用户。",
+   no:"第一年<b>不做</b>：不做医疗承诺、不替代真人探视。它是记得你的人，不是照顾你的人。这条线越界就是伦理事故。"}
+];
+
+/* ============ MAP ============ */
+var map = document.getElementById("map");
+var verdictEl = document.getElementById("verdict");
+var hint = document.getElementById("hint");
+var dots = [];
+
+PRODUCTS.forEach(function(p){
+  var d = document.createElement("div");
+  d.className = "dot";
+  d.dataset.id = p.id;
+  d.innerHTML = "<div class='pin" + (p.lamp ? " lamp" : "") + "'>" + p.short + "</div><div class='tag'>" + p.name + "</div>";
+  d.style.left = p.x + "%";
+  d.style.top = p.y + "%";
+  map.appendChild(d);
+  dots.push({el:d, p:p, ox:p.x, oy:p.y});
+  attachDrag(d, p);
+});
+
+function pct(e){
+  var r = map.getBoundingClientRect();
+  var cx = (e.touches ? e.touches[0].clientX : e.clientX);
+  var cy = (e.touches ? e.touches[0].clientY : e.clientY);
+  return {
+    x: Math.max(4, Math.min(96, (cx - r.left) / r.width * 100)),
+    y: Math.max(5, Math.min(93, (cy - r.top) / r.height * 100))
+  };
+}
+
+function attachDrag(el, p){
+  var dragging = false, moved = false;
+  function down(e){
+    dragging = true; moved = false;
+    el.classList.add("drag");
+    e.preventDefault();
+  }
+  function move(e){
+    if(!dragging) return;
+    var pos = pct(e);
+    if(Math.abs(pos.x - p.x) + Math.abs(pos.y - p.y) > 1.5) moved = true;
+    p.x = pos.x; p.y = pos.y;
+    el.style.left = p.x + "%";
+    el.style.top = p.y + "%";
+  }
+  function up(){
+    if(!dragging) return;
+    dragging = false;
+    el.classList.remove("drag");
+    hint.style.opacity = 0;
+    if(moved){
+      el.classList.add("moved");
+      showVerdict(p);
+    } else {
+      showNote(p);
+    }
+  }
+  el.addEventListener("mousedown", down);
+  el.addEventListener("touchstart", down, {passive:false});
+  window.addEventListener("mousemove", move);
+  window.addEventListener("touchmove", move, {passive:false});
+  window.addEventListener("mouseup", up);
+  window.addEventListener("touchend", up);
+}
+
+function showVerdict(p){
+  for(var i = 0; i < VERDICTS.length; i++){
+    if(VERDICTS[i].cond(p.x, p.y)){
+      verdictEl.innerHTML = "<b>" + p.name + "</b>：" + VERDICTS[i].text;
+      verdictEl.classList.add("show");
+      return;
+    }
+  }
+  verdictEl.innerHTML = "<b>" + p.name + "</b>：这个位置没人站过。它为什么空着？要么没人想到，要么想到的人都死了。值得查一查是哪一种。";
+  verdictEl.classList.add("show");
+}
+
+function showNote(p){
+  verdictEl.innerHTML = "<b>" + p.name + "</b>：" + p.note;
+  verdictEl.classList.add("show");
+}
+
+document.getElementById("reset").onclick = function(){
+  dots.forEach(function(d){
+    d.p.x = d.ox; d.p.y = d.oy;
+    d.el.style.left = d.ox + "%";
+    d.el.style.top = d.oy + "%";
+    d.el.classList.remove("moved");
+  });
+  verdictEl.classList.remove("show");
+};
+
+/* ============ OPPORTUNITY CARDS ============ */
+var qbtns = document.getElementById("qbtns");
+var oppTitle = document.getElementById("oppTitle");
+var oppBody = document.getElementById("oppBody");
+
+function showOpp(i){
+  var o = OPPORTUNITIES[i];
+  [].forEach.call(qbtns.children, function(b, idx){ b.className = "qbtn" + (idx === i ? " on" : ""); });
+  oppTitle.textContent = o.title;
+  oppBody.innerHTML =
+    "<div class='who'>" + o.who + "</div>" +
+    "<div class='line'>" + o.line + "</div>" +
+    "<div class='line small muted'>" + o.why + "</div>" +
+    "<div class='no'>" + o.no + "</div>";
+}
+
+OPPORTUNITIES.forEach(function(o, i){
+  var b = document.createElement("button");
+  b.className = "qbtn";
+  b.textContent = o.label;
+  b.onclick = function(){ showOpp(i); };
+  qbtns.appendChild(b);
+});
+showOpp(0);
+
+/* clicking empty map space cycles opportunities */
+map.addEventListener("dblclick", function(){
+  var cur = [].findIndex.call(qbtns.children, function(b){ return b.className.indexOf("on") >= 0; });
+  showOpp((cur + 1) % OPPORTUNITIES.length);
+});
+</script>
+</body>
+</html>
