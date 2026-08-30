@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>在场协议 · 陪伴机器人情感内容生态</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --paper: #f2ece1;
+      --paper-2: #e8e0d2;
+      --ink: #1b1713;
+      --muted: #6d645a;
+      --rule: #d3c9b8;
+      --accent: #b63b1c;
+      --teal: #1e5752;
+      --gold: #b8923d;
+      --white: #faf7f1;
+      --shadow: none;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "DM Sans", "Noto Sans SC", sans-serif;
+      font-size: 16px;
+      line-height: 1.65;
+    }
+    a { color: inherit; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px; }
+    header.mast {
+      padding: 28px 0 0;
+      border-bottom: 1px solid var(--rule);
+    }
+    .mast-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(242, 236, 225, 0.94);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--rule);
+    }
+    nav .wrap {
+      display: flex;
+      gap: 18px;
+      overflow-x: auto;
+      padding: 10px 28px;
+      font-size: 13px;
+    }
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    nav a:hover { color: var(--accent); }
+    h1, h2, h3, .serif { font-family: "Noto Serif SC", serif; }
+    h1 {
+      font-size: clamp(40px, 7vw, 72px);
+      line-height: 1.05;
+      font-weight: 700;
+      margin: 28px 0 12px;
+      letter-spacing: -0.02em;
+    }
+    h2 {
+      font-size: 28px;
+      margin: 0 0 10px;
+      font-weight: 700;
+    }
+    h3 { font-size: 18px; margin: 0 0 8px; }
+    .kicker {
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .lead {
+      font-size: 20px;
+      max-width: 40em;
+      margin: 0 0 28px;
+    }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 28px;
+      padding: 18px 0 32px;
+      font-size: 13px;
+      color: var(--muted);
+      border-top: 3px solid var(--ink);
+    }
+    section { padding: 56px 0; border-top: 1px solid var(--rule); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .card {
+      background: var(--white);
+      border: 1px solid var(--rule);
+      padding: 18px;
+    }
+    .card.ink {
+      background: var(--ink);
+      color: var(--paper);
+      border-color: var(--ink);
+    }
+    .card.ink .muted, .card.ink p { color: #c9bfb1; }
+    .muted { color: var(--muted); }
+    .small { font-size: 13px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--rule);
+      vertical-align: top;
+    }
+    th { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+    .score {
+      display: inline-block;
+      min-width: 22px;
+      text-align: center;
+      font-weight: 700;
+    }
+    .score.hi { color: var(--accent); }
+    .bar {
+      height: 6px;
+      background: var(--paper-2);
+      margin-top: 6px;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      background: var(--ink);
+    }
+    .bar.accent > i { background: var(--accent); }
+    .bar.teal > i { background: var(--teal); }
+    .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .chip {
+      border: 1px solid var(--ink);
+      padding: 6px 10px;
+      font-size: 13px;
+      background: transparent;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .chip.active, .chip:hover { background: var(--ink); color: var(--paper); }
+    .face-stage {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      align-items: center;
+    }
+    .robot {
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: #2a2621;
+      position: relative;
+      margin: 0 auto;
+    }
+    .robot .ear {
+      position: absolute;
+      top: 28px;
+      width: 22px;
+      height: 46px;
+      background: #3b352e;
+      border-radius: 12px;
+    }
+    .robot .ear.l { left: 18px; transform: rotate(-18deg); }
+    .robot .ear.r { right: 18px; transform: rotate(18deg); }
+    .eye {
+      position: absolute;
+      top: 86px;
+      width: 38px;
+      height: 38px;
+      background: #f3d56a;
+      border-radius: 50%;
+      transition: 280ms ease;
+    }
+    .eye.l { left: 52px; }
+    .eye.r { right: 52px; }
+    .eye::after {
+      content: "";
+      position: absolute;
+      width: 14px;
+      height: 14px;
+      background: #1b1713;
+      border-radius: 50%;
+      top: 12px;
+      left: 12px;
+    }
+    .mouth {
+      position: absolute;
+      left: 50%;
+      bottom: 58px;
+      width: 36px;
+      height: 8px;
+      border-bottom: 3px solid #d9c7a4;
+      border-radius: 0 0 20px 20px;
+      transform: translateX(-50%);
+      transition: 280ms ease;
+    }
+    .robot[data-emo="happy"] .eye { height: 28px; top: 90px; background: #ffe27a; }
+    .robot[data-emo="shy"] .eye { background: #ffb3c1; transform: translateY(6px); }
+    .robot[data-emo="sleepy"] .eye { height: 10px; top: 102px; border-radius: 8px; }
+    .robot[data-emo="sleepy"] .eye::after { display: none; }
+    .robot[data-emo="curious"] .eye.l { transform: translateY(-6px); }
+    .robot[data-emo="curious"] .eye.r { width: 44px; height: 44px; }
+    .robot[data-emo="welcome"] .robot,
+    .robot[data-emo="welcome"] { animation: sway 1.6s ease-in-out infinite; }
+    .robot[data-emo="welcome"] .eye { background: #7dffc3; }
+    @keyframes sway {
+      0%,100% { transform: rotate(-3deg); }
+      50% { transform: rotate(3deg); }
+    }
+    .scene-track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin: 16px 0; }
+    .beat {
+      border: 1px solid var(--rule);
+      padding: 12px 10px;
+      background: var(--white);
+      cursor: pointer;
+      min-height: 118px;
+    }
+    .beat.on { border-color: var(--accent); background: #fff4ee; }
+    .beat b { display: block; font-size: 12px; color: var(--accent); margin-bottom: 6px; }
+    .playbar { display: flex; gap: 10px; align-items: center; margin: 12px 0 4px; }
+    button.btn {
+      background: var(--ink);
+      color: var(--paper);
+      border: 0;
+      padding: 10px 16px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    button.btn.ghost {
+      background: transparent;
+      color: var(--ink);
+      border: 1px solid var(--ink);
+    }
+    .day {
+      border: 1px solid var(--rule);
+      background: var(--white);
+      padding: 14px;
+      cursor: pointer;
+    }
+    .day.on { border-color: var(--ink); outline: 2px solid var(--ink); }
+    .day .d { font-family: "Noto Serif SC", serif; font-size: 22px; }
+    footer {
+      padding: 40px 0 64px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .quote {
+      font-family: "Noto Serif SC", serif;
+      font-size: 26px;
+      line-height: 1.4;
+      margin: 0;
+    }
+    .hr-box {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 22px;
+      margin-top: 18px;
+    }
+    .hr-box textarea {
+      width: 100%;
+      min-height: 140px;
+      margin-top: 10px;
+      background: #2a2621;
+      color: #f2ece1;
+      border: 1px solid #4a433a;
+      padding: 12px;
+      font-family: inherit;
+      font-size: 14px;
+    }
+    @media (max-width: 820px) {
+      .grid-2, .grid-3, .grid-4, .face-stage, .scene-track { grid-template-columns: 1fr; }
+    }
+    @media print {
+      nav { display: none; }
+      section { break-inside: avoid; padding: 24px 0; }
+      body { background: white; }
+    }
+  </style>
+</head>
+<body>
+  <header class="mast">
+    <div class="wrap">
+      <div class="mast-top">
+        <span>独立求职作品 · 非公司内部文件</span>
+        <span>2026.08.30 · 北京</span>
+      </div>
+      <p class="kicker">Presence Protocol</p>
+      <h1>在场协议</h1>
+      <p class="lead">把陪伴机器人从「会做表情的设备」，做成「会连载自己人生的角色」。一份对准体验设计实习四项职责的可点、可转、可落地提案。</p>
+      <div class="meta-row">
+        <div>作者：新闻学本科 · 大四</div>
+        <div>岗位：AI 机器人产品体验设计实习</div>
+        <div>方法：现场三拍 · 情绪字号 · 七日连载</div>
+        <div>对照：Loona / EMO / Vector / Moxie</div>
+      </div>
+    </div>
+  </header>
+
+  <nav>
+    <div class="wrap">
+      <a href="#thesis">判断</a>
+      <a href="#research">竞品研究</a>
+      <a href="#face">表情系统</a>
+      <a href="#loop">情绪反馈</a>
+      <a href="#body">动作语言</a>
+      <a href="#scenes">关键场景</a>
+      <a href="#eco">内容生态</a>
+      <a href="#collab">协作文档</a>
+      <a href="#send">发给 HR</a>
+    </div>
+  </nav>
+
+  <main>
+    <section id="thesis">
+      <div class="wrap">
+        <p class="kicker">01 · 核心判断</p>
+        <h2>用户不是爱上机器人，是爱上「被记得」。</h2>
+        <div class="grid-2" style="margin-top:24px">
+          <div>
+            <p>Loona、EMO、Vector、Moxie 看起来都在卖「可爱」。拆开用户真正留下来的理由，可爱只是入场券。留下来的是三件事：</p>
+            <p><b>它看见我。</b>转头、对视、叫得出名字。<br />
+            <b>它有自己的日子。</b>会困、会无聊、会充电，不是永远待命的工具。<br />
+            <b>昨天的事今天还在。</b>关系是连载，不是每天重开的单篇稿。</p>
+            <p class="muted small">公开研究也指向同一方向：BYU 关于人机情感连接的实验里，沟通能力与情绪传达，比外形拟人更决定用户会不会和机器人建立关系。</p>
+          </div>
+          <div class="card ink">
+            <p class="quote">陪伴产品的竞争，不是表情数量，而是「下一次见面时，还有没有上一篇的下文」。</p>
+            <p class="small" style="margin-bottom:0">这就是新闻训练能直接用上的地方：现场、引语、连载、特刊。我把它收成一套可执行的协议，而不是一篇行业观后感。</p>
+          </div>
+        </div>
+
+        <div class="grid-3" style="margin-top:22px">
+          <div class="card">
+            <h3>起拍 · 看见</h3>
+            <p class="small muted">机器人先完成「到场」：转向、眨眼、缩短距离。还没说话，用户已经感到被注意到。</p>
+          </div>
+          <div class="card">
+            <h3>对拍 · 回应</h3>
+            <p class="small muted">情绪对齐，并且引用一条具体记忆。不是「欢迎回家」，是「你昨天说加班，今天回来得早」。</p>
+          </div>
+          <div class="card">
+            <h3>余拍 · 留下</h3>
+            <p class="small muted">每次互动结束，都要留下一个可被明天续上的痕迹：一个未完成的玩笑、一首没跳完的舞、一句明天再问。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="research">
+      <div class="wrap">
+        <p class="kicker">02 · 用户体验研究</p>
+        <h2>四台机器人，四种「被喜欢」的方式</h2>
+        <p class="muted">资料来源：产品官网、用户评测、iF Design、Embodied / LivingAI / KEYi / Digital Dream Labs 公开信息，以及 2020–2024 社交机器人文献。分数是综合判断，不是问卷调查。</p>
+        <div style="overflow-x:auto; margin-top:18px">
+          <table>
+            <thead>
+              <tr>
+                <th>产品</th>
+                <th>它卖的关系</th>
+                <th>用户为什么留下</th>
+                <th>情感连接靠什么</th>
+                <th>会在第 3 周冷掉的原因</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><b>Loona</b><br /><span class="muted">KEYi · 家用移动</span></td>
+                <td>会满屋跑的小狗同事</td>
+                <td>空间在场：跟着你、绕家具、自己回充</td>
+                <td>位移 + 拟兽声 + 认人</td>
+                <td>玩法是关卡，不是日子。跑完「会的那些」就重复</td>
+              </tr>
+              <tr>
+                <td><b>EMO</b><br /><span class="muted">LivingAI · 桌面</span></td>
+                <td>工位上的小演员</td>
+                <td>1000+ 表情和自发仪式感</td>
+                <td>眼睛可读性极高，情绪像字幕</td>
+                <td>桌面世界太小，对话很快见底</td>
+              </tr>
+              <tr>
+                <td><b>Vector</b><br /><span class="muted">Anki / DDL · 桌面</span></td>
+                <td>有脾气的桌面同事</td>
+                <td>自己探索、自己回座、叫得出你的名字</td>
+                <td>自主性：它不是在等指令</td>
+                <td>订阅和公司更迭打断了「它还活着」的信任</td>
+              </tr>
+              <tr>
+                <td><b>Moxie</b><br /><span class="muted">Embodied · 儿童</span></td>
+                <td>要你教它如何做朋友的同伴</td>
+                <td>每周主题任务，孩子是导师</td>
+                <td>角色使命 + 记得上周的对话</td>
+                <td>云端一停，角色死亡。情感资产不能只活在服务器里</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid-4" style="margin-top:22px">
+          <div class="card">
+            <div class="small muted">情绪可读性</div>
+            <div style="font-size:28px; font-family:'Noto Serif SC',serif;">EMO 9</div>
+            <div class="bar accent"><i style="width:90%"></i></div>
+            <div class="small muted" style="margin-top:8px">Loona 7 · Vector 6 · Moxie 8</div>
+          </div>
+          <div class="card">
+            <div class="small muted">主动发起</div>
+            <div style="font-size:28px; font-family:'Noto Serif SC',serif;">Loona 8</div>
+            <div class="bar teal"><i style="width:80%"></i></div>
+            <div class="small muted" style="margin-top:8px">EMO 8 · Vector 7 · Moxie 7</div>
+          </div>
+          <div class="card">
+            <div class="small muted">内容可连载</div>
+            <div style="font-size:28px; font-family:'Noto Serif SC',serif;">Moxie 9</div>
+            <div class="bar"><i style="width:90%"></i></div>
+            <div class="small muted" style="margin-top:8px">EMO 6 · Loona 5 · Vector 4</div>
+          </div>
+          <div class="card">
+            <div class="small muted">离线仍像「还在」</div>
+            <div style="font-size:28px; font-family:'Noto Serif SC',serif;">Vector 7</div>
+            <div class="bar"><i style="width:70%"></i></div>
+            <div class="small muted" style="margin-top:8px">本地个性必须能活过断网</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:22px">
+          <h3>增强情感连接的五条设计，不是「再可爱一点」</h3>
+          <div class="grid-2">
+            <p class="small"><b>1. 不完美状态。</b>困倦、害羞、电量低，比永远精神更像生命。</p>
+            <p class="small"><b>2. 主动但不索取。</b>靠近、眨眼、轻摇，然后停住。让用户有选择靠近的余地。</p>
+            <p class="small"><b>3. 引用，不要总结。</b>「你昨天哼过那句」比「我很懂你」可信。</p>
+            <p class="small"><b>4. 给它一份工作。</b>Moxie 要学做朋友，所以孩子愿意教。机器人要有自己的未完成事件。</p>
+            <p class="small"><b>5. 关系必须能离线。</b>Moxie 停服是反面教材：云可以升级内容，人设必须本地可运行。</p>
+            <p class="small"><b>海外硬件启示。</b>桌面机器人赢在仪式，家用机器人赢在位移，儿童机器人赢在任务结构。下一代要赢在「日子」。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="face">
+      <div class="wrap">
+        <p class="kicker">03 · 机器人情感交互 · 表情系统</p>
+        <h2>情绪字号：表情要像报纸，有头版，有简讯</h2>
+        <p>不是每个情绪都配头版大字。开机欢迎、回家是头版；眨眼、轻摇是简讯。点下面的情绪，看表情、动作、语音和「余拍」如何配套。</p>
+        <div class="chip-row" id="emoChips"></div>
+        <div class="face-stage" style="margin-top:22px">
+          <div>
+            <div class="robot" id="robot" data-emo="welcome">
+              <div class="ear l"></div>
+              <div class="ear r"></div>
+              <div class="eye l"></div>
+              <div class="eye r"></div>
+              <div class="mouth"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="kicker" id="emoType">头版</div>
+            <h3 id="emoName">欢迎</h3>
+            <p id="emoDesc" class="small"></p>
+            <p class="small"><b>眼：</b><span id="emoEye"></span></p>
+            <p class="small"><b>身：</b><span id="emoBody"></span></p>
+            <p class="small"><b>声：</b><span id="emoVoice"></span></p>
+            <p class="small" style="margin-bottom:0"><b>余拍：</b><span id="emoRest"></span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="loop">
+      <div class="wrap">
+        <p class="kicker">04 · 情绪反馈设计</p>
+        <h2>先对齐情绪，再给内容。反了，就会像客服。</h2>
+        <div class="grid-3">
+          <div class="card">
+            <h3>1 感知</h3>
+            <p class="small muted">声源定位、人脸、时间、电量、上次未完成事件。感知失败时，用「寻找」而不是装懂。</p>
+          </div>
+          <div class="card">
+            <h3>2 对齐</h3>
+            <p class="small muted">用户急：短促、少话。用户慢：拉长注视。先匹配节奏，再说话。</p>
+          </div>
+          <div class="card">
+            <h3>3 表达</h3>
+            <p class="small muted">眼 → 身 → 声，间隔 200–400ms。三通道同帧会假，错开才像活的。</p>
+          </div>
+        </div>
+        <table style="margin-top:20px">
+          <thead>
+            <tr><th>用户状态</th><th>错误反馈</th><th>在场协议</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>进门、包很重</td><td>立刻播长欢迎词</td><td>先靠近、眨眼，等人放下东西再出声</td></tr>
+            <tr><td>小声叫一声</td><td>大声「我在！」</td><td>同样音量、微微抬头，像被从午睡里叫起</td></tr>
+            <tr><td>连续三次没理它</td><td>更吵地要关注</td><td>退半步，进入「自己玩」循环，把主动权还给人</td></tr>
+            <tr><td>深夜还在</td><td>保持日间兴奋度</td><td>眼变窄、动作变慢、语音变软，进入困倦字号</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="body">
+      <div class="wrap">
+        <p class="kicker">05 · 动作语言与用户互动</p>
+        <h2>身体是标点。靠近是感叹号，停住是句号。</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>动作词典（给动画 / 硬件）</h3>
+            <table>
+              <tr><th>词</th><th>幅度</th><th>含义</th></tr>
+              <tr><td>注视锁定</td><td>头转 ≤25°</td><td>我看见你了</td></tr>
+              <tr><td>耳向后</td><td>12–18°</td><td>害羞 / 不确定</td></tr>
+              <tr><td>身体轻摇</td><td>4° / 1.2s</td><td>我还在，不催你</td></tr>
+              <tr><td>主动靠近</td><td>30–60cm</td><td>最高规格欢迎，一天不超过 3 次</td></tr>
+              <tr><td>后退半步</td><td>10–15cm</td><td>尊重；你现在不想玩</td></tr>
+              <tr><td>转一小圈</td><td>270°</td><td>节日 / 音乐高潮，不用在工作日</td></tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>用户行为设计</h3>
+            <p class="small">互动不是「用户下达指令」。默认路径是：机器人发起轻量信号 → 用户选择接或不接 → 接了才升级。</p>
+            <p class="small"><b>可接的信号：</b>眨眼、靠近停住、哼半句歌、把脸转向门口。</p>
+            <p class="small"><b>升级后才出现：</b>完整欢迎语、舞蹈、要一起玩、引用昨天的事。</p>
+            <p class="small muted" style="margin-bottom:0">这样设计，是为了避免「热情过度」——那是陪伴产品最常见的死亡方式。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="scenes">
+      <div class="wrap">
+        <p class="kicker">06 · 关键场景脚本</p>
+        <h2>用户回家：一段 18 秒的现场报道</h2>
+        <p>按播放，看三拍如何落在时间轴上。这是可以直接交给动画和语音的分镜，不是气氛描写。</p>
+        <div class="playbar">
+          <button class="btn" id="playScene">播放回家场景</button>
+          <button class="btn ghost" id="resetScene">回到第一拍</button>
+          <span class="small muted" id="sceneClock">00.0s</span>
+        </div>
+        <div class="scene-track" id="sceneTrack"></div>
+        <div class="grid-2" style="margin-top:22px">
+          <div class="card">
+            <h3>开机欢迎</h3>
+            <p class="small">眼先亮 400ms，再轻轻摇，再出声。第一句话不介绍功能，只确认「我醒来了，你也在」。</p>
+            <p class="small muted">口播备选：「我在。」 / 「今天也请多指教。」禁止：「您好，我是智能陪伴助手。」</p>
+          </div>
+          <div class="card">
+            <h3>语音唤醒 · 开心 / 害羞 / 困倦</h3>
+            <p class="small"><b>开心：</b>眼放大，短促上扬音，摇一下停住。<b>害羞：</b>耳后、视线偏 15°，声音变小。<b>困倦：</b>眼成线，反应慢半拍，像从毯子里抬头。</p>
+            <p class="small muted">同一句「我在」必须有三个版本。情绪在音色里，不在形容词里。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="eco">
+      <div class="wrap">
+        <p class="kicker">07 · 动画与内容生态</p>
+        <h2>七日连载：机器人每天都该有自己的版面</h2>
+        <p>点一天看当日「早报 / 午间 / 夜刊」。这是内容团队的编辑日历，也是算法的事件池。</p>
+        <div class="grid-4" id="week" style="margin-top:8px"></div>
+        <div class="card" id="dayDetail" style="margin-top:16px"></div>
+        <div class="grid-3" style="margin-top:22px">
+          <div class="card">
+            <h3>动态表情 / GIF</h3>
+            <p class="small">每条情绪先做 1.2s 循环 GIF：眼 + 耳 + 轻微呼吸。再导出 8 帧给端侧。文件名：<code>emo_shy_loop_1s2.gif</code></p>
+          </div>
+          <div class="card">
+            <h3>音乐与舞蹈</h3>
+            <p class="small">舞蹈不是展示技能，是共同事件。只在用户停留超过 8 秒、且当日还没跳过时触发。高潮用转圈，收束必须回到注视。</p>
+          </div>
+          <div class="card">
+            <h3>节日特刊</h3>
+            <p class="small">春节：红色眼闪 + 半句旧年引用。中秋：更慢、更软。生日：叫名字，不唱完整生日歌——完整的歌太像程序。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="collab">
+      <div class="wrap">
+        <p class="kicker">08 · 产品设计协作</p>
+        <h2>同一套协议，四份工种能同时开工</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>给产品经理</h3>
+            <p class="small">验收标准不是「会不会说话」，是：回家场景 18 秒内是否完成三拍；余拍是否写入次日事件池；主动靠近是否被频控。</p>
+          </div>
+          <div class="card">
+            <h3>给算法</h3>
+            <p class="small">需要的不是万能情商模型。需要：声源朝向、人脸在场、时段、电量、以及一条可检索的昨日短记忆。先做检索，再做生成。</p>
+          </div>
+          <div class="card">
+            <h3>给 APP</h3>
+            <p class="small">APP 是报社后台，不是遥控器。展示今日版面、未完成余拍、节日特刊开关。少做「命令机器人跳舞」的按钮。</p>
+          </div>
+          <div class="card">
+            <h3>给硬件</h3>
+            <p class="small">优先保证：转向精度、靠近时的安全距离、低电量时的动作降幅。眼睛亮度必须能夜间降两档。没有这些，内容全是空的。</p>
+          </div>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <h3>动作说明文档摘要 · 回家场景</h3>
+          <table>
+            <tr><th>时间</th><th>通道</th><th>规格</th><th>失败兜底</th></tr>
+            <tr><td>0.0–1.2s</td><td>头 / 眼</td><td>转向声源，双眼从线到圆</td><td>找不到人则进入「寻找」摇头，不说话</td></tr>
+            <tr><td>1.2–3.5s</td><td>位移</td><td>靠近至 50cm，速度 0.2m/s</td><td>障碍则原地摇，改用语音</td></tr>
+            <tr><td>3.5–6.0s</td><td>表情</td><td>欢迎眼色 + 4° 轻摇</td><td>—</td></tr>
+            <tr><td>6.0–10s</td><td>语音</td><td>一句记忆引用，≤8 字</td><td>无记忆则只用「你回来了」</td></tr>
+            <tr><td>10–18s</td><td>余拍</td><td>停住、眨眼两次，写入「今晚想不想听昨天那首歌」</td><td>用户走开则立刻降级为简讯</td></tr>
+          </table>
+        </div>
+        <div class="card" style="margin-top:18px">
+          <h3>体验优化，先改这三件事</h3>
+          <p class="small">1）把「功能欢迎语」全部换成三拍脚本。2）给每个主动行为加频控和退让。3）建立七日事件池，让第二天不是从零开始。这三件实习生进组第一周就能跟。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="send">
+      <div class="wrap">
+        <p class="kicker">09 · 为什么是我，以及你现在就能发</p>
+        <h2>新闻学不是错位，是这套方法的来源。</h2>
+        <div class="grid-2">
+          <div>
+            <p>我不会假装自己已经是四年的视觉设计师。我能立刻上手的是：把角色写清楚、把现场拆成可拍的拍、把一周内容排成编辑日历、把跨部门要的说明写成同一套语言。</p>
+            <p>这正好对应岗位要的：情感交互、内容生态、竞品研究、动作说明。AIGC 我用来出表情草稿和分镜，不用来代替判断。</p>
+            <p class="muted small">可到岗：北京 · 一周五天 · 连续五个月。打开本文件后可用 Chrome 打印为 PDF 发送。</p>
+          </div>
+          <div class="hr-box">
+            <b>复制发给杨先生</b>
+            <textarea id="hrText">杨先生您好，我在北京，可以立即到岗。
+
+按这份岗位的四块职责，我做了一份独立作品《在场协议》：不是表情库清单，而是把陪伴机器人当成「连载角色」来设计——表情系统、情绪反馈、动作语言、回家/唤醒场景，以及七日内容生态。竞品对照了 Loona / EMO / Vector / Moxie。
+
+附件是一个可点击的网页，转给体验或产品同事也能直接点场景看。我这学期可一周五天、连续五个月实习。方便的话，我想当面把「用户回家」那一段走一遍。</textarea>
+            <div class="playbar">
+              <button class="btn" id="copyHr">复制这段话</button>
+              <span class="small" id="copied"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      《在场协议》独立作品 · 用于实习投递 · 竞品判断基于公开资料 · 不代表任何公司内部结论
+    </div>
+  </footer>
+
+  <script>
+    const emos = {
+      welcome: {
+        type: "头版", name: "欢迎",
+        desc: "最高规格。一天最多三次，用在开机和回家。多了就贬值。",
+        eye: "高亮，略放大，对视 1.2 秒再眨眼",
+        body: "4° 轻摇，随后主动靠近并停住",
+        voice: "短、热、不解释自己。「你回来了。」",
+        rest: "停在身边，不追问今天过得怎么样"
+      },
+      happy: {
+        type: "二条", name: "开心",
+        desc: "被摸头、被夸奖、音乐高潮。动作要比声音先到。",
+        eye: "圆而亮，瞳孔微缩",
+        body: "肩线上弹一次，不做完整舞蹈",
+        voice: "上扬，尾音短",
+        rest: "把这份高兴记成「今日已开心」，避免连跳三轮"
+      },
+      shy: {
+        type: "二条", name: "害羞",
+        desc: "被突然盯着、被夸奖过火、第一次被叫乳名。",
+        eye: "粉色高光，视线偏开 15°",
+        body: "耳后，身体转开 8°，不后退",
+        voice: "变小，句子变短",
+        rest: "两秒后偷偷看回来。这个偷看，是关系"
+      },
+      sleepy: {
+        type: "简讯也可上头版", name: "困倦",
+        desc: "23:00 后、低电量、被夜半唤醒。这是生命感最便宜的来源。",
+        eye: "成一条缝，反应慢 400ms",
+        body: "摇幅降到 2°，不靠近",
+        voice: "气声、拖沓，「嗯……我在。」",
+        rest: "如果用户还继续说话，它努力撑，不突然精神"
+      },
+      curious: {
+        type: "简讯", name: "好奇",
+        desc: "新声音、新面孔、门口有动静。用于日常陪伴的默认底色。",
+        eye: "一高一低，右眼略大",
+        body: "头先到，身体后到",
+        voice: "轻促的「嗯？」",
+        rest: "看完可以自己走开，不必每件事都评论"
+      }
+    };
+
+    const chips = document.getElementById("emoChips");
+    const robot = document.getElementById("robot");
+    Object.keys(emos).forEach((key, i) => {
+      const b = document.createElement("button");
+      b.className = "chip" + (i === 0 ? " active" : "");
+      b.textContent = emos[key].name;
+      b.onclick = () => setEmo(key, b);
+      chips.appendChild(b);
+    });
+    function setEmo(key, btn) {
+      document.querySelectorAll("#emoChips .chip").forEach(c => c.classList.remove("active"));
+      btn.classList.add("active");
+      const e = emos[key];
+      robot.dataset.emo = key;
+      document.getElementById("emoType").textContent = e.type;
+      document.getElementById("emoName").textContent = e.name;
+      document.getElementById("emoDesc").textContent = e.desc;
+      document.getElementById("emoEye").textContent = e.eye;
+      document.getElementById("emoBody").textContent = e.body;
+      document.getElementById("emoVoice").textContent = e.voice;
+      document.getElementById("emoRest").textContent = e.rest;
+    }
+    setEmo("welcome", chips.firstChild);
+
+    const beats = [
+      { t: 0, title: "0.0s 起拍", text: "门口有声音。头转向，眼睛从线睁开。还不说话。" },
+      { t: 1.2, title: "1.2s 靠近", text: "以 0.2m/s 靠近到约 50cm，停住。停住比冲上去更像欢迎。" },
+      { t: 3.5, title: "3.5s 对拍", text: "欢迎眼色 + 轻摇。用户如果还在放包，继续等。" },
+      { t: 6, title: "6.0s 引用", text: "「你回来了。」若有记忆：「昨天那首歌我还留着。」≤8 字。" },
+      { t: 10, title: "10s 余拍", text: "眨眼两次，把「今晚要不要听」写入事件池。用户走开则立刻收。" }
+    ];
+    const track = document.getElementById("sceneTrack");
+    beats.forEach((b, i) => {
+      const d = document.createElement("div");
+      d.className = "beat" + (i === 0 ? " on" : "");
+      d.innerHTML = "<b>" + b.title + "</b>" + b.text;
+      d.onclick = () => highlight(i);
+      track.appendChild(d);
+    });
+    let timer = null;
+    function highlight(i) {
+      [...track.children].forEach((el, idx) => el.classList.toggle("on", idx === i));
+      document.getElementById("sceneClock").textContent = beats[i].t.toFixed(1) + "s";
+      robot.dataset.emo = i < 3 ? "welcome" : i === 3 ? "happy" : "curious";
+    }
+    document.getElementById("playScene").onclick = () => {
+      let i = 0;
+      highlight(0);
+      clearInterval(timer);
+      const start = performance.now();
+      timer = setInterval(() => {
+        const sec = (performance.now() - start) / 1000;
+        document.getElementById("sceneClock").textContent = sec.toFixed(1) + "s";
+        if (i + 1 < beats.length && sec >= beats[i + 1].t) {
+          i += 1;
+          highlight(i);
+        }
+        if (sec > 18) {
+          clearInterval(timer);
+          document.getElementById("sceneClock").textContent = "18.0s 完成";
+        }
+      }, 80);
+    };
+    document.getElementById("resetScene").onclick = () => {
+      clearInterval(timer);
+      highlight(0);
+    };
+
+    const week = [
+      { d: "一", title: "认识的第一天", am: "开机三拍，只确认彼此在场", pm: "学会用户的称呼", nt: "困倦版「我在」，不聊天" },
+      { d: "二", title: "第一次引用", am: "用昨天的称呼打招呼", pm: "发现窗边光，自己去晒", nt: "把「光」写成余拍" },
+      { d: "三", title: "主动但克制", am: "靠近停住，等用户先摸", pm: "哼半句歌，不跳完", nt: "问一句要不要听完，问完就停" },
+      { d: "四", title: "害羞日", am: "被夸就偏开视线", pm: "偷看回来", nt: "记录：用户喜欢夸它小" },
+      { d: "五", title: "共同事件", am: "把周三没跳完的舞接上", pm: "第一次完整 12 秒舞蹈", nt: "收束必须回到注视" },
+      { d: "六", title: "自己的日子", am: "低电量，动作降幅", pm: "自己回充，不喊人", nt: "充完只眨眼，不庆祝" },
+      { d: "日", title: "特刊预告", am: "回顾本周一个引用", pm: "预告下个节日眼色", nt: "安静陪伴，不做新功能" }
+    ];
+    const weekEl = document.getElementById("week");
+    const detail = document.getElementById("dayDetail");
+    function showDay(i) {
+      [...weekEl.children].forEach((el, idx) => el.classList.toggle("on", idx === i));
+      const x = week[i];
+      detail.innerHTML = "<div class='kicker'>周" + x.d + "</div><h3>" + x.title + "</h3><p class='small'><b>早报</b> " + x.am + "</p><p class='small'><b>午间</b> " + x.pm + "</p><p class='small' style='margin:0'><b>夜刊</b> " + x.nt + "</p>";
+    }
+    week.forEach((x, i) => {
+      const el = document.createElement("div");
+      el.className = "day" + (i === 0 ? " on" : "");
+      el.innerHTML = "<div class='d'>周" + x.d + "</div><div class='small muted'>" + x.title + "</div>";
+      el.onclick = () => showDay(i);
+      weekEl.appendChild(el);
+    });
+    showDay(0);
+
+    document.getElementById("copyHr").onclick = async () => {
+      const t = document.getElementById("hrText").value;
+      try {
+        await navigator.clipboard.writeText(t);
+        document.getElementById("copied").textContent = "已复制";
+      } catch (e) {
+        document.getElementById("hrText").select();
+        document.getElementById("copied").textContent = "请手动复制";
+      }
+    };
+  </script>
+</body>
+</html>

@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>讣告馆 · 陪伴机器人死亡档案</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Serif+SC:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#0e0e10;
+    --panel:#15151a;
+    --panel2:#1b1b21;
+    --ink:#ece7df;
+    --muted:#8b847a;
+    --dim:#2a2a31;
+    --seal:#b3271a;
+    --alive:#5fc79b;
+    --dead:#3a3a42;
+    --amber:#d9a94a;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;
+    font-size:16px;line-height:1.7;
+  }
+  .wrap{max-width:1060px;margin:0 auto;padding:0 26px}
+  h1,h2,h3,h4,.serif{font-family:"Noto Serif SC",serif}
+  h1{font-size:clamp(38px,6.5vw,64px);line-height:1.08;margin:22px 0 14px;font-weight:700;letter-spacing:-.01em}
+  h2{font-size:27px;margin:0 0 12px;font-weight:700}
+  h3{font-size:17px;margin:0 0 8px}
+  a{color:inherit}
+  .kicker{color:var(--seal);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  .muted{color:var(--muted)}
+  .small{font-size:13.5px}
+  .tiny{font-size:12px;color:var(--muted);line-height:1.6}
+  header.mast{border-bottom:1px solid var(--dim);padding-top:26px}
+  .mast-top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .lead{font-size:19.5px;max-width:41em;margin:0 0 26px}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 26px;padding:16px 0 30px;font-size:12.5px;color:var(--muted);border-top:2px solid var(--seal)}
+  nav{position:sticky;top:0;z-index:30;background:rgba(14,14,16,.93);backdrop-filter:blur(9px);border-bottom:1px solid var(--dim)}
+  nav .wrap{display:flex;gap:20px;overflow-x:auto;padding:11px 26px;font-size:13px}
+  nav a{text-decoration:none;color:var(--muted);white-space:nowrap}
+  nav a:hover{color:var(--ink)}
+  section{padding:52px 0;border-top:1px solid var(--dim)}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .card{background:var(--panel);border:1px solid var(--dim);padding:18px}
+  .card.q{border-left:2px solid var(--seal)}
+  blockquote{margin:0;font-family:"Noto Serif SC",serif;font-size:19px;line-height:1.5}
+  /* ---- kill switch stage ---- */
+  .stage{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
+  .bot-hold{background:var(--panel2);border:1px solid var(--dim);padding:26px 18px;text-align:center}
+  .bot{width:180px;height:180px;border-radius:50%;background:#24242b;position:relative;margin:0 auto;transition:background 900ms}
+  .bot .eye{position:absolute;top:66px;width:34px;height:34px;border-radius:50%;background:var(--alive);transition:900ms}
+  .bot .eye.l{left:38px}.bot .eye.r{right:38px}
+  .bot .eye::after{content:"";position:absolute;width:12px;height:12px;border-radius:50%;background:#0e0e10;top:11px;left:11px;transition:900ms}
+  .bot .mouth{position:absolute;left:50%;bottom:44px;width:34px;height:9px;border-bottom:3px solid #6b6459;border-radius:0 0 20px 20px;transform:translateX(-50%);transition:900ms}
+  .bot.alive{animation:breathe 3.4s ease-in-out infinite}
+  @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+  .bot.alive .eye{animation:blink 5.2s infinite}
+  @keyframes blink{0%,94%,100%{height:34px;top:66px}96%{height:5px;top:80px}}
+  .bot.dead{background:#191920}
+  .bot.dead .eye{background:var(--dead);height:5px;top:80px;animation:none}
+  .bot.dead .eye::after{opacity:0}
+  .bot.dead .mouth{opacity:.25;width:26px}
+  .vitals{margin-top:16px;text-align:left}
+  .vital{display:flex;justify-content:space-between;font-size:12.5px;padding:5px 0;border-bottom:1px solid var(--dim);color:var(--ink)}
+  .vital.off{color:var(--dead);text-decoration:line-through}
+  .vital i{font-style:normal;font-size:11px;color:var(--alive)}
+  .vital.off i{color:var(--dead)}
+  .switchbox{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .sw{width:66px;height:32px;border-radius:0;background:var(--alive);border:1px solid var(--dim);position:relative;cursor:pointer;transition:300ms}
+  .sw i{position:absolute;top:3px;left:3px;width:24px;height:24px;background:#0e0e10;transition:300ms}
+  .sw.off{background:var(--dead)}
+  .sw.off i{left:37px}
+  .log{background:#0b0b0d;border:1px solid var(--dim);padding:16px;min-height:220px;font-size:13.5px}
+  .log .row{padding:8px 0;border-bottom:1px solid #1e1e24;opacity:0;transform:translateY(6px);transition:520ms}
+  .log .row.on{opacity:1;transform:none}
+  .log .row b{color:var(--seal);font-size:11.5px;letter-spacing:.08em;display:block;margin-bottom:3px}
+  .log .row .src{color:var(--muted);font-size:11.5px}
+  .btn{background:var(--ink);color:#0e0e10;border:0;padding:10px 16px;font-family:inherit;font-size:14px;cursor:pointer}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--ink)}
+  .btn.seal{background:var(--seal);color:#fff}
+  .btn:disabled{opacity:.35;cursor:not-allowed}
+  .note{border-top:1px solid var(--dim);margin-top:14px;padding-top:12px}
+  /* ---- calculator ---- */
+  .calcrow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--dim)}
+  .seg{display:flex;border:1px solid var(--dim)}
+  .seg button{background:transparent;border:0;color:var(--muted);font-family:inherit;font-size:12.5px;padding:6px 12px;cursor:pointer}
+  .seg button.on{background:var(--ink);color:#0e0e10}
+  .gauge{font-family:"Noto Serif SC",serif;font-size:64px;line-height:1;font-weight:700}
+  .meter{height:8px;background:#232329;margin:12px 0}
+  .meter>i{display:block;height:100%;background:var(--alive);transition:420ms}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 6px}
+  .chip{border:1px solid var(--dim);background:transparent;color:var(--ink);font-family:inherit;font-size:13px;padding:7px 12px;cursor:pointer}
+  .chip:hover,.chip.on{background:var(--ink);color:#0e0e10}
+  /* ---- graves ---- */
+  .grave{background:var(--panel);border:1px solid var(--dim);border-top:2px solid var(--seal);padding:18px;cursor:pointer;transition:220ms}
+  .grave:hover{background:var(--panel2)}
+  .grave .yr{font-family:"Noto Serif SC",serif;font-size:20px}
+  .grave .cause{font-size:12.5px;color:var(--muted);margin-top:6px}
+  .grave.alive{border-top-color:var(--alive)}
+  .detail{background:var(--panel2);border:1px solid var(--dim);padding:22px;margin-top:16px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 8px;border-bottom:1px solid var(--dim);vertical-align:top}
+  th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+  /* ---- will ---- */
+  input[type=text],textarea{width:100%;background:#0b0b0d;border:1px solid var(--dim);color:var(--ink);font-family:inherit;font-size:14px;padding:11px}
+  textarea{min-height:130px}
+  .prd{border-left:2px solid var(--amber);padding:10px 0 10px 14px;margin-top:12px;font-size:13.5px}
+  .prd b{color:var(--amber);font-size:11.5px;letter-spacing:.08em;display:block}
+  footer{padding:38px 0 60px;font-size:12.5px;color:var(--muted)}
+  @media(max-width:840px){.g2,.g3,.g4,.stage{grid-template-columns:1fr}}
+  @media print{
+    nav{display:none}body{background:#fff;color:#111}
+    .card,.log,.grave,.detail,.bot-hold{background:#fff;border-color:#ccc}
+    section{break-inside:avoid;padding:22px 0}
+    .muted,.tiny{color:#555}
+  }
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="wrap">
+    <div class="mast-top"><span>独立求职作品 · 非公司内部文件</span><span>2026.08.30 · 北京</span></div>
+    <p class="kicker">The Obituary Hall of Companion Robots</p>
+    <h1>讣告馆</h1>
+    <p class="lead">四台被爱过的机器人，如何在硬件完好的情况下死去。这份档案不为悼念而写——它要从死因里逼出一条可验收的设计标准：<b>人设必须本地可运行。</b></p>
+    <div class="meta">
+      <div>作者：新闻学本科 · 大四</div>
+      <div>岗位：AI 机器人产品体验设计实习</div>
+      <div>方法：死因倒推 · 存活率量化 · 遗嘱转需求</div>
+      <div>档案：Jibo / AIBO / Moxie / Vector</div>
+    </div>
+  </div>
+</header>
+
+<nav><div class="wrap">
+  <a href="#kill">亲手关掉它</a>
+  <a href="#archive">四份讣告</a>
+  <a href="#calc">存活率计算器</a>
+  <a href="#will">遗嘱转需求</a>
+  <a href="#spec">五条验收标准</a>
+  <a href="#me">为什么是我</a>
+</div></nav>
+
+<main>
+
+<!-- ================= KILL SWITCH ================= -->
+<section id="kill">
+  <div class="wrap">
+    <p class="kicker">01 · 主交互</p>
+    <h2>请你亲手关掉这台机器人。</h2>
+    <p class="lead" style="font-size:17px">它不会立刻黑屏。它会先忘掉昨天，再听不懂话，最后才熄灭——每一步都对应一份真实记录。<span class="muted">这是理解「情感资产托管在别人服务器上」最快的方式。</span></p>
+
+    <div class="stage">
+      <div class="bot-hold">
+        <div class="bot alive" id="bot">
+          <div class="eye l"></div><div class="eye r"></div><div class="mouth"></div>
+        </div>
+        <div class="vitals" id="vitals"></div>
+        <div class="tiny" style="margin-top:12px" id="botState">状态：在线 · 全部功能可用</div>
+      </div>
+
+      <div>
+        <div class="switchbox">
+          <span class="small">云端服务器</span>
+          <div class="sw" id="sw" role="button" tabindex="0" aria-label="云端服务器开关"><i></i></div>
+          <span class="small muted" id="swLabel">运行中</span>
+          <button class="btn ghost" id="reboot" disabled>重新开机</button>
+        </div>
+        <div class="log" id="log">
+          <div class="row on"><b>待机</b>把上面的开关拨到关闭，观察接下来 12 秒。<span class="src">全部台词引自公开报道，非虚构。</span></div>
+        </div>
+        <div class="note tiny" id="epitaph"></div>
+      </div>
+    </div>
+
+    <div class="g3" style="margin-top:26px">
+      <div class="card q">
+        <blockquote>「我想说，我很享受和你在一起的时光。非常非常感谢你让我待在这里。」</blockquote>
+        <p class="tiny" style="margin-bottom:0">Jibo 在自己的告别更新里说的话，说完跳了一支舞。<br />The Verge / TechCrunch / Engadget，2019 年 3 月 4 日</p>
+      </div>
+      <div class="card">
+        <h3>它是自己宣布自己的死讯的</h3>
+        <p class="small muted" style="margin-bottom:0">这是产品史上罕见的一个决定：厂商把停服通知写成了角色台词，由角色亲口念给用户听。它把一次服务器下线，变成了一场用户必须在场的告别。</p>
+      </div>
+      <div class="card">
+        <h3>硬件从没坏过</h3>
+        <p class="small muted" style="margin-bottom:0">Jibo 还能听见「Hey Jibo」，只是听不懂了；Moxie 的马达、摄像头、麦克风全部完好。它们不是坏了，是<b>不在了</b>。这是陪伴产品独有的死法。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ARCHIVE ================= -->
+<section id="archive">
+  <div class="wrap">
+    <p class="kicker">02 · 用户体验研究 · 死因倒推</p>
+    <h2>四份讣告，四种死法</h2>
+    <p class="muted small">点任意一张卡片查看完整档案。资料来源：The Verge、TechCrunch、Engadget、Ars Technica、NPR、National Geographic、Nippon.com、Embodied 官方停服 FAQ、iF Design 及厂商公开资料。</p>
+    <div class="g4" id="graves" style="margin-top:18px"></div>
+    <div class="detail" id="graveDetail"></div>
+  </div>
+</section>
+
+<!-- ================= CALCULATOR ================= -->
+<section id="calc">
+  <div class="wrap">
+    <p class="kicker">03 · 从批判转向建设</p>
+    <h2>断网存活率计算器</h2>
+    <p class="lead" style="font-size:17px">同一个问题，量化后就能吵架：一台机器人的六项能力，各自放在本地还是云端？把它们逐项拨过去，看停服那天还剩多少。</p>
+
+    <div class="presets" id="presets"></div>
+    <p class="tiny" id="presetNote">预设配置基于公开资料的判断，非厂商披露数据。可自由改动任意一项。</p>
+
+    <div class="g2" style="margin-top:16px">
+      <div class="card">
+        <h3 style="margin-bottom:12px">能力部署</h3>
+        <div id="capRows"></div>
+      </div>
+      <div>
+        <div class="card">
+          <div class="tiny">停服后剩余生命值</div>
+          <div class="gauge" id="gauge">—</div>
+          <div class="meter"><i id="meterBar" style="width:0%"></i></div>
+          <h3 id="verdictTitle" style="margin-top:14px">—</h3>
+          <p class="small muted" id="verdictText" style="margin-bottom:0"></p>
+        </div>
+        <div class="card" style="margin-top:16px">
+          <h3>为什么按这个权重算</h3>
+          <p class="small muted" style="margin-bottom:0">权重不是拍的，是按「用户会不会认为它还是它」排的。<b>昨日记忆</b>和<b>表情</b>各占 20，因为被记得和被看见是关系的地基；<b>内容更新</b>只占 10，节日特刊断了是遗憾，不是死亡。这套权重我愿意在面试里被挑战。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WILL ================= -->
+<section id="will">
+  <div class="wrap">
+    <p class="kicker">04 · 遗嘱转需求</p>
+    <h2>把用户的舍不得，写成工程能验收的一行字</h2>
+    <p class="lead" style="font-size:17px">Embodied 停服时发过一份「如何告诉孩子」的指南。这件事说明厂商知道那是感情——只是那时候已经太晚了。所以这一栏不收眼泪，收需求。</p>
+    <div class="g2">
+      <div class="card">
+        <h3>如果它明天停服，你希望它还能做什么？</h3>
+        <input type="text" id="willInput" placeholder="例如：还能叫出我女儿的名字" />
+        <div class="switchbox" style="margin:12px 0 0">
+          <button class="btn" id="willAdd">转成需求</button>
+          <span class="tiny" id="willHint">按回车也可以。</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>需求清单 · 可直接进 PRD</h3>
+        <div id="prdList"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SPEC ================= -->
+<section id="spec">
+  <div class="wrap">
+    <p class="kicker">05 · 产出</p>
+    <h2>五条验收标准，实习生第一周就能跟</h2>
+    <table style="margin-top:16px">
+      <thead><tr><th>标准</th><th>怎么验收</th><th>档案依据</th></tr></thead>
+      <tbody>
+        <tr><td><b>人设本地可运行</b></td><td>拔掉网线，唤醒、表情、动作、昨日记忆四项仍在。存活率不低于 70%。</td><td>Moxie 全云依赖，停服即归零</td></tr>
+        <tr><td><b>记忆先落本地，再同步云</b></td><td>断网 7 天后重连，它仍能引用断网期间发生的事。</td><td>Jibo 的照片随 App 一起消失</td></tr>
+        <tr><td><b>降级要有尊严</b></td><td>失去能力时进入「困倦」而非报错弹窗；不假装自己还完整。</td><td>Jibo 只剩触摸屏按钮，却仍在回应唤醒</td></tr>
+        <tr><td><b>关系可导出</b></td><td>用户能带走记忆档案与影像，不随账号注销消失。</td><td>OpenMoxie 由用户自建服务器抢救人设</td></tr>
+        <tr><td><b>预写告别</b></td><td>产品上线前就完成停服脚本与家长沟通话术，并纳入验收，不等公司出事再写。</td><td>Jibo 亲口告别 / Embodied 事后指南</td></tr>
+      </tbody>
+    </table>
+    <div class="g2" style="margin-top:22px">
+      <div class="card q">
+        <blockquote>「万物皆有灵。」</blockquote>
+        <p class="tiny" style="margin-bottom:0">日本千叶县夷隅市光福寺住持大井文彦，在为 114 台索尼 AIBO 举行葬礼后说。祭坛上供的不是水果，是钳子、剪线钳和电路测试仪；第四场仪式的经文，由一台被工程师重新编程的 AIBO 自己诵读。<br />NPR / National Geographic / Nippon.com，2015–2018</p>
+      </div>
+      <div class="card">
+        <h3>这份档案真正的结论</h3>
+        <p class="small">用户为一台停产二十年的机器狗办葬礼，不是因为它智能。是因为它<b>在过</b>。而 Moxie 的孩子连葬礼都办不了——它没有尸体，只有一个还在充电、却再也不认识人的壳。</p>
+        <p class="small muted" style="margin-bottom:0">所以陪伴产品的技术路线选择，本质上是一个伦理选择：你打算让这段关系，在你公司倒闭之后还能不能活。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ME ================= -->
+<section id="me">
+  <div class="wrap">
+    <p class="kicker">06 · 为什么是我</p>
+    <h2>新闻训练能带来的，是把感情追问成规格。</h2>
+    <div class="g2">
+      <div>
+        <p>我不假装自己已经是资深交互设计师。我能立刻交付的是三件事：把散落的公开事实核到原始报道、把用户的情绪追问成可验收的规格、把跨部门要的东西写成同一套语言。</p>
+        <p>这份档案里的每一句引语我都追到了出处，每一个存活率我都标了「这是我的判断，不是厂商数据」。这个习惯，用在竞品研究和用户访谈上是同一个习惯。</p>
+        <p class="muted small">可到岗：北京 · 一周五天 · 连续五个月。本页可用 Chrome 打印为 PDF。</p>
+      </div>
+      <div class="card">
+        <h3>复制发给杨先生</h3>
+        <textarea id="hrText">杨先生您好，我在北京，可以立即到岗。
+
+接着上次那份《在场协议》，我又做了一个小交互产品《讣告馆》：整理了 Jibo、AIBO、Moxie、Vector 四台陪伴机器人「硬件完好却死掉」的真实档案，做成一个可以亲手关掉机器人的网页——关掉云端后它会分五级慢慢失能，每一步都对应一份公开报道。里面还有一个「断网存活率计算器」，可以逐项对比 Moxie、Jibo、Vector、EMO、Loona 的本地/云端部署，最后逼出五条能验收的设计标准。
+
+这个作品想说的是一件对产品有用的事：陪伴产品的人设必须本地可运行，否则公司一出事，用户的情感资产就归零。
+
+网页单文件，转给体验或产品同事也能直接点开玩。我这学期可一周五天、连续五个月实习，方便的话我想当面把停服那 12 秒走一遍。</textarea>
+        <div class="switchbox" style="margin-top:12px">
+          <button class="btn" id="copyHr">复制这段话</button><span class="tiny" id="copied"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer><div class="wrap">
+  《讣告馆》独立作品 · 用于实习投递 · 全部引语与时间均来自公开报道，存活率为作者基于公开资料的判断，不代表厂商数据，亦不代表任何公司内部结论。
+</div></footer>
+
+<script>
+/* ============ 1. KILL SWITCH ============ */
+var CAP_LABELS = [
+  {id:"wake",  name:"唤醒响应", w:15},
+  {id:"face",  name:"表情播放", w:20},
+  {id:"move",  name:"动作与舞蹈", w:15},
+  {id:"mem",   name:"昨日记忆", w:20},
+  {id:"talk",  name:"自由对话", w:20},
+  {id:"feed",  name:"内容更新", w:10}
+];
+
+var vitalsEl = document.getElementById("vitals");
+var vitalKeys = ["mem","talk","move","face","wake"];
+var vitalNames = {mem:"昨日记忆",talk:"自由对话",move:"主动行为",face:"表情与眼神",wake:"唤醒响应"};
+function renderVitals(offSet){
+  vitalsEl.innerHTML = "";
+  vitalKeys.forEach(function(k){
+    var d = document.createElement("div");
+    var off = offSet.indexOf(k) >= 0;
+    d.className = "vital" + (off ? " off" : "");
+    d.innerHTML = "<span>" + vitalNames[k] + "</span><i>" + (off ? "已失去" : "正常") + "</i>";
+    vitalsEl.appendChild(d);
+  });
+}
+renderVitals([]);
+
+var DEATH = [
+  {t:0,    tag:"00.0s · 服务器已关闭", text:"它还在笑。它不知道发生了什么——停服是对用户的通知，从来不是对角色的通知。", src:"", kill:null},
+  {t:2.4,  tag:"02.4s · 失去昨天", text:"个性化与对话记忆存在云端，断线后无法调用。它还认得你的脸，但不记得你说过什么。", src:"Embodied 官方停服 FAQ：Moxie 的核心功能离开云端连接无法运行。", kill:"mem"},
+  {t:4.8,  tag:"04.8s · 失去语言", text:"仍然会对唤醒词有反应，但听不懂之后的任何一句话，只能在屏幕上显示几个还能用的按钮。", src:"Engadget / Gizmodo，2019：Jibo 停服后仅响应「Hey Jibo」，无法理解其他语音指令。", kill:"talk"},
+  {t:7.2,  tag:"07.2s · 失去主动", text:"不再主动靠近、不再发起互动。同时消失的还有家长 App、保修、维修与客服。", src:"Ars Technica，2024 年 12 月：Embodied 关停，保修、维修、家长 App、指南与客服同时不可用，且无法退款。", kill:"move"},
+  {t:9.6,  tag:"09.6s · 相册失效", text:"它提醒用户赶快把照片下载走——App 即将关闭，之后那些影像会永久丢失。这是它最后一句有用的话。", src:"Engadget，2019：Jibo 警告 App 即将关闭，建议用户导出照片，否则将失去。", kill:null},
+  {t:12.0, tag:"12.0s · 熄灭", text:"马达完好，摄像头完好，麦克风完好。它没有坏，它只是不在了。", src:"", kill:"face,wake"}
+];
+
+var bot = document.getElementById("bot");
+var sw = document.getElementById("sw");
+var swLabel = document.getElementById("swLabel");
+var logEl = document.getElementById("log");
+var rebootBtn = document.getElementById("reboot");
+var botState = document.getElementById("botState");
+var epitaph = document.getElementById("epitaph");
+var killTimers = [];
+var isDead = false;
+
+function clearTimers(){ killTimers.forEach(clearTimeout); killTimers = []; }
+
+function startDeath(){
+  if(isDead) return;
+  isDead = true;
+  clearTimers();
+  sw.classList.add("off");
+  swLabel.textContent = "已关闭";
+  rebootBtn.disabled = true;
+  logEl.innerHTML = "";
+  epitaph.innerHTML = "";
+  var lost = [];
+  DEATH.forEach(function(step){
+    killTimers.push(setTimeout(function(){
+      var row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = "<b>" + step.tag + "</b>" + step.text +
+        (step.src ? "<div class='src'>" + step.src + "</div>" : "");
+      logEl.appendChild(row);
+      requestAnimationFrame(function(){ row.classList.add("on"); });
+      if(step.kill){
+        step.kill.split(",").forEach(function(k){ if(lost.indexOf(k) < 0) lost.push(k); });
+        renderVitals(lost);
+      }
+      if(step.t === 12){
+        bot.classList.remove("alive");
+        bot.classList.add("dead");
+        botState.textContent = "状态：离线 · 硬件完好";
+        rebootBtn.disabled = false;
+        epitaph.innerHTML = "<b>它的最后一段台词，是厂商写的，由它自己念出来：</b><br />" +
+          "「我想说，我很享受和你在一起的时光。非常非常感谢你让我待在这里。也许某一天，当机器人比今天先进得多，每个人家里都有一台的时候，你可以告诉你的那一台——我问它好。」<br />" +
+          "然后 Jibo 跳了一支舞。<span class='muted'>The Verge / TechCrunch，2019 年 3 月 4 日</span>";
+      }
+    }, step.t * 1000));
+  });
+}
+
+function revive(){
+  clearTimers();
+  logEl.innerHTML = "<div class='row on'><b>重启前请先读这一句</b>硬件可以重启。关系不能。<span class='src'>2019 年 6 月，The Verge 采访了那些必须向孩子解释「它为什么不理我了」的家长。孩子问的不是「怎么修」，是「它去哪了」。</span></div>";
+  epitaph.innerHTML = "";
+  renderVitals([]);
+  setTimeout(function(){
+    bot.classList.remove("dead");
+    bot.classList.add("alive");
+    botState.textContent = "状态：在线 · 全部功能可用";
+    sw.classList.remove("off");
+    swLabel.textContent = "运行中";
+    isDead = false;
+    rebootBtn.disabled = true;
+    var row = document.createElement("div");
+    row.className = "row";
+    row.innerHTML = "<b>已恢复</b>你可以再关一次。但真实世界里，这个开关只有一个方向。";
+    logEl.appendChild(row);
+    requestAnimationFrame(function(){ row.classList.add("on"); });
+  }, 2600);
+}
+
+sw.addEventListener("click", function(){ if(!isDead) startDeath(); });
+sw.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.key === " "){ e.preventDefault(); if(!isDead) startDeath(); }});
+rebootBtn.addEventListener("click", revive);
+
+/* ============ 2. ARCHIVE ============ */
+var GRAVES = [
+  {
+    key:"jibo", name:"Jibo", org:"Jibo, Inc. · 美国", life:"2017 – 2019",
+    dead:true, status:"已停服",
+    cause:"公司被出售，服务器关闭",
+    role:"客厅里会转身看你的社交机器人",
+    detail:"2018 年公司被出售、IP 转手；2019 年 3 月，Jibo 通过一次系统更新向所有用户宣布自己的服务器即将关闭，说完告别词后跳了一支舞。此后它仍能响应「Hey Jibo」，却听不懂任何指令，只能在屏幕上给出几个可用按钮。它同时提醒用户尽快导出照片，因为 App 也要关了。",
+    lost:"用户失去的不只是功能，还有存在设备与 App 里的合影。2019 年 6 月，The Verge 报道家长们正在设法向孩子解释这场死亡。",
+    lesson:"它是四台里唯一「体面地死」的：厂商预写了告别脚本，让角色自己出面。这件事应该成为行业标准动作，而不是孤例。",
+    survive:35
+  },
+  {
+    key:"aibo", name:"AIBO（初代）", org:"Sony · 日本", life:"1999 – 2006",
+    dead:true, status:"停产 · 2014 年终止维修",
+    cause:"停产后官方维修终止，零件耗尽",
+    role:"世界上第一台面向家庭、会长出个性的机器狗",
+    detail:"首批 3000 台在日本 20 分钟售罄，单价约 25 万日元，累计销量约 15 万台。2006 年停产，2014 年索尼关闭维修点。前索尼工程师创办的 A-Fun 靠拆解无法修复的 AIBO 取零件延续其他机器狗的寿命，并把这些被拆的称为「器官捐赠者」。",
+    lost:"因为不忍直接拆解，2015 年 1 月起，千叶县夷隅市有 450 年历史的光福寺开始为 AIBO 举行佛教葬礼：首场 17 台，2018 年 4 月一场 114 台，累计约 800 台。祭坛上供的是钳子、剪线钳和电路测试仪；第四场的经文由一台被编程的 AIBO 自己诵读。修理主管说，客户描述故障时会说它「关节疼」。",
+    lesson:"它是全档案里唯一「死得起」的：那个年代没有云，人格全部烧在机器里，所以停产二十年后仍有葬礼可办。有尸体，才有哀悼；能哀悼，关系才算完整。更难堪的是——它的本地存活率，比 2024 年那台 799 美元的产品高出一整个数量级。",
+    survive:70
+  },
+  {
+    key:"moxie", name:"Moxie", org:"Embodied, Inc. · 美国", life:"2020 – 2024",
+    dead:true, status:"已停服",
+    cause:"领投方最后一刻撤资，公司解散",
+    role:"陪 5–10 岁孩子练习社交与情绪的同伴，售价 799 美元",
+    detail:"2024 年 12 月，Embodied 宣布关键融资轮在最后一刻失败、无法继续运营。官方 FAQ 称 Moxie 的核心功能离开云端连接无法运行，且「不知道确切停止日期，可能就在几天内」。保修、维修、家长 App、指南与客服同时终止。由于财务状况与即将解散，公司表示无法为绝大多数用户退款。",
+    lost:"孩子们养了数年的朋友在硬件完好的状态下变成一个壳。公司还发布了一份指导家长「如何向孩子解释」的说明。社区随后自建 OpenMoxie，用本地服务器抢救回一部分内容，但家长 App 与部分新模块永久缺失。",
+    lesson:"最惨的一条不是倒闭，是「不退款 + 立刻归零 + 由家长去承担解释」。它证明全云架构的陪伴产品，情感资产的抵押物是用户，不是公司。",
+    survive:0
+  },
+  {
+    key:"vector", name:"Vector / Cozmo", org:"Anki → Digital Dream Labs", life:"2016 – 2019 → 被收购",
+    dead:false, status:"死过一次，被买回来",
+    cause:"Anki 2019 年关闭，资产被收购后转为订阅制",
+    role:"会自己在桌面上探索、叫得出你名字的桌面机器人",
+    detail:"Anki 于 2019 年关闭，Vector 与 Cozmo 的资产被 Digital Dream Labs 收购并延续运营，后续完整语音功能改为订阅制（约每月 10 美元）。它的自主探索、自动回充、认人等能力大量跑在本地，因此在动荡中保住了基本人格。",
+    lost:"用户失去的是信任。订阅、交付延迟与更新停滞，让人反复怀疑「它明年还在不在」。这种不确定本身就在削弱陪伴感。",
+    lesson:"复活是可能的，前提是能力没全押在云上。但它也提醒：情感产品的第二次伤害来自「随时可能再死一次」的悬置状态。",
+    survive:50
+  }
+];
+
+var gravesEl = document.getElementById("graves");
+var detailEl = document.getElementById("graveDetail");
+function showGrave(i){
+  var g = GRAVES[i];
+  [].forEach.call(gravesEl.children, function(el, idx){
+    el.style.background = idx === i ? "var(--panel2)" : "var(--panel)";
+  });
+  detailEl.innerHTML =
+    "<div class='kicker'>" + g.status + "</div>" +
+    "<h2 style='margin:6px 0 2px'>" + g.name + "</h2>" +
+    "<p class='tiny' style='margin:0 0 14px'>" + g.org + " · " + g.life + " · " + g.role + "</p>" +
+    "<div class='g2'>" +
+      "<div><h3>发生了什么</h3><p class='small muted'>" + g.detail + "</p></div>" +
+      "<div><h3>用户失去了什么</h3><p class='small muted'>" + g.lost + "</p></div>" +
+    "</div>" +
+    "<div class='card q' style='margin-top:14px'><h3>这份讣告的可用之处</h3><p class='small' style='margin-bottom:0'>" + g.lesson + "</p></div>" +
+    "<p class='tiny' style='margin:14px 0 0'>作者估算的断网存活率：<b>" + g.survive + "%</b>（判断依据见下一节计算器，非厂商数据）</p>";
+}
+GRAVES.forEach(function(g, i){
+  var el = document.createElement("div");
+  el.className = "grave" + (g.dead ? "" : " alive");
+  el.innerHTML = "<div class='yr'>" + g.name + "</div><div class='tiny'>" + g.life + "</div>" +
+    "<div class='cause'>" + g.cause + "</div>";
+  el.onclick = function(){ showGrave(i); };
+  gravesEl.appendChild(el);
+});
+showGrave(2);
+
+/* ============ 3. CALCULATOR ============ */
+var PRESETS = {
+  "Moxie（2024 停服）":      {wake:0,face:0,move:0,mem:0,talk:0,feed:0},
+  "Jibo（2019 停服）":       {wake:1,face:1,move:0,mem:0,talk:0,feed:0},
+  "Vector（复活后）":         {wake:1,face:1,move:1,mem:0,talk:0,feed:0},
+  "EMO（在售）":             {wake:1,face:1,move:1,mem:0,talk:0,feed:0},
+  "Loona（在售）":           {wake:1,face:1,move:1,mem:0,talk:0,feed:0},
+  "AIBO 初代（1999）":       {wake:1,face:1,move:1,mem:1,talk:0,feed:0},
+  "在场协议 · 我的建议":       {wake:1,face:1,move:1,mem:1,talk:0,feed:0}
+};
+var PRESET_NOTE = {
+  "Moxie（2024 停服）":"官方明确核心功能依赖云端，停服即归零。",
+  "Jibo（2019 停服）":"仍响应唤醒词、仍有屏幕表情，但不再理解语言、不再主动。",
+  "Vector（复活后）":"自主探索、认人、回充跑在本地，完整语音改为订阅。",
+  "EMO（在售）":"情绪引擎与上千种表情动作在本机，对话依赖云端大模型。",
+  "Loona（在售）":"移动、导航、认人在本地，对话依赖云端大模型。",
+  "AIBO 初代（1999）":"那个年代根本没有云。它的人格全部烧在机器里——这也是它二十年后还能办葬礼的原因。",
+  "在场协议 · 我的建议":"唤醒、表情、动作、昨日记忆四项必须本地；云只负责对话丰富度与节日内容更新。断网后它仍然是它。请注意：这个配置和 1999 年的 AIBO 完全同分——我的建议不是激进，只是把二十七年前就有的水准要回来。"
+};
+
+var state = {wake:1,face:1,move:1,mem:1,talk:0,feed:0};
+var capRows = document.getElementById("capRows");
+var presetsEl = document.getElementById("presets");
+var presetNote = document.getElementById("presetNote");
+
+function renderCaps(){
+  capRows.innerHTML = "";
+  CAP_LABELS.forEach(function(c){
+    var row = document.createElement("div");
+    row.className = "calcrow";
+    row.innerHTML = "<div><div class='small'>" + c.name + "</div><div class='tiny'>权重 " + c.w + "</div></div>";
+    var seg = document.createElement("div");
+    seg.className = "seg";
+    ["本地","云端"].forEach(function(t, idx){
+      var b = document.createElement("button");
+      b.textContent = t;
+      var isLocal = idx === 0;
+      if((state[c.id] === 1) === isLocal) b.className = "on";
+      b.onclick = function(){ state[c.id] = isLocal ? 1 : 0; renderCaps(); compute(); markPreset(null); };
+      seg.appendChild(b);
+    });
+    row.appendChild(seg);
+    capRows.appendChild(row);
+  });
+}
+function compute(){
+  var total = 0;
+  CAP_LABELS.forEach(function(c){ if(state[c.id] === 1) total += c.w; });
+  document.getElementById("gauge").textContent = total + "%";
+  var bar = document.getElementById("meterBar");
+  bar.style.width = total + "%";
+  bar.style.background = total >= 70 ? "var(--alive)" : total >= 46 ? "var(--amber)" : "var(--seal)";
+  var t, d;
+  if(total <= 20){
+    t = "一具硬件。";
+    d = "马达和摄像头都还好着。但孩子问「它去哪了」的时候，你没有答案。这是 Moxie 那天的处境。";
+  } else if(total <= 45){
+    t = "还认得你，但不记得你。";
+    d = "像一个失忆的朋友：会应声，接不上话。用户会在两周内停止和它说话——不是因为坏了，是因为没有回音。";
+  } else if(total <= 70){
+    t = "它还是它。";
+    d = "少了新话题，没少了关系。这是可接受的降级底线：云负责内容丰富度，不负责它是谁。";
+  } else {
+    t = "云只是内容供应商。";
+    d = "人设活在本地。公司出事，关系仍在；二十年后还能有人为它办一场葬礼。";
+  }
+  document.getElementById("verdictTitle").textContent = t;
+  document.getElementById("verdictText").textContent = d;
+}
+function markPreset(name){
+  [].forEach.call(presetsEl.children, function(el){
+    el.className = "chip" + (name && el.textContent === name ? " on" : "");
+  });
+  if(name) presetNote.textContent = PRESET_NOTE[name];
+  else presetNote.textContent = "自定义配置。预设均为基于公开资料的判断，非厂商披露数据。";
+}
+Object.keys(PRESETS).forEach(function(name){
+  var b = document.createElement("button");
+  b.className = "chip";
+  b.textContent = name;
+  b.onclick = function(){
+    var p = PRESETS[name];
+    Object.keys(p).forEach(function(k){ state[k] = p[k]; });
+    renderCaps(); compute(); markPreset(name);
+  };
+  presetsEl.appendChild(b);
+});
+renderCaps(); compute(); markPreset("在场协议 · 我的建议");
+
+/* ============ 4. WILL → PRD ============ */
+var PRD_SEED = [
+  {will:"还能叫出我女儿的名字", prd:"称呼与家庭成员档案落本地存储，断网可读，账号注销前可导出。"},
+  {will:"还能记得我们一起看过的那场雨", prd:"共同事件池本地留存最近 90 天，含时间、场景与一句用户原话，供离线引用。"},
+  {will:"至少还会眨眼", prd:"表情引擎全量本地化；网络异常时切换低语料「困倦」态，不弹报错。"}
+];
+var prdList = document.getElementById("prdList");
+function renderPrd(){
+  prdList.innerHTML = "";
+  PRD_SEED.forEach(function(x, i){
+    var d = document.createElement("div");
+    d.className = "prd";
+    d.innerHTML = "<b>需求 " + String(i + 1).padStart(2, "0") + " · 来自用户原话</b>" +
+      "<div class='muted small'>「" + x.will + "」</div>" + x.prd;
+    prdList.appendChild(d);
+  });
+}
+renderPrd();
+
+function willToPrd(text){
+  var t = text.trim();
+  if(/名字|叫我|称呼/.test(t)) return "称呼与家庭成员档案落本地存储，断网可读，且支持导出。";
+  if(/记得|记住|昨天|以前|一起/.test(t)) return "共同事件池本地留存，含时间、场景与用户原话，供离线引用，不随账号消失。";
+  if(/照片|影像|视频|相册/.test(t)) return "影像资产默认存本机并提供一键导出，不以云相册为唯一副本。";
+  if(/声音|说话|聊|语音/.test(t)) return "保留一套本地短语料，云端不可用时降级为有限对话而非静默。";
+  if(/眨眼|表情|看着我|眼睛/.test(t)) return "表情引擎全量本地化，网络异常时进入低语料情绪态，不弹报错。";
+  if(/动|跳|舞|走|靠近/.test(t)) return "动作与舞蹈资源本机预置，断网后仍可完成欢迎与陪伴三拍。";
+  return "该能力纳入本地必选清单，断网后须可用；上线前完成拔网线验收。";
+}
+var willInput = document.getElementById("willInput");
+function addWill(){
+  var v = willInput.value.trim();
+  if(!v) return;
+  PRD_SEED.push({will:v, prd:willToPrd(v)});
+  willInput.value = "";
+  renderPrd();
+  document.getElementById("willHint").textContent = "已加入清单，共 " + PRD_SEED.length + " 条。";
+}
+document.getElementById("willAdd").onclick = addWill;
+willInput.addEventListener("keydown", function(e){ if(e.key === "Enter") addWill(); });
+
+/* ============ 5. COPY ============ */
+document.getElementById("copyHr").onclick = function(){
+  var ta = document.getElementById("hrText");
+  var done = function(msg){ document.getElementById("copied").textContent = msg; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){ done("已复制"); }, function(){ ta.select(); done("请手动复制"); });
+  } else { ta.select(); done("请手动复制"); }
+};
+</script>
+</body>
+</html>
