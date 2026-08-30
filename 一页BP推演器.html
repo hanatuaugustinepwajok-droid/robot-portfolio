@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>一页 BP 推演器 · AI 陪伴机器人</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f4efe6;
+    --ink:#181410;
+    --muted:#7a7166;
+    --rule:#d8cfc0;
+    --accent:#b63b1c;
+    --teal:#1e5752;
+    --white:#fbf8f2;
+    --dead:#c9c0b1;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;font-size:16px;line-height:1.65}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 26px}
+  h1,h2,h3,.serif{font-family:"Noto Serif SC",serif}
+  h1{font-size:clamp(32px,5vw,50px);line-height:1.06;margin:16px 0 10px;font-weight:700;letter-spacing:-.01em}
+  .kicker{color:var(--accent);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  .lead{font-size:18px;max-width:38em;margin:0 0 18px}
+  .muted{color:var(--muted)}
+  .small{font-size:13.5px}
+  .tiny{font-size:12px;color:var(--muted);line-height:1.6}
+  header{padding:30px 0 22px;border-bottom:1px solid var(--rule)}
+  .mast-top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .meta{display:flex;flex-wrap:wrap;gap:8px 24px;padding-top:14px;font-size:12.5px;color:var(--muted)}
+  main{padding:36px 0 10px}
+  .layout{display:grid;grid-template-columns:340px 1fr;gap:28px;align-items:start}
+
+  /* ---- controls ---- */
+  .ctrl{background:var(--white);border:1px solid var(--rule);padding:20px}
+  .ctrl h3{font-size:16px;margin:0 0 4px}
+  .slider-block{padding:16px 0;border-bottom:1px solid var(--rule)}
+  .slider-block:last-child{border-bottom:0}
+  .slider-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .slider-head .val{font-family:"Noto Serif SC",serif;font-size:22px;font-weight:700;color:var(--accent)}
+  input[type=range]{width:100%;-webkit-appearance:none;appearance:none;height:2px;background:var(--rule);outline:none}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid var(--paper);box-shadow:0 0 0 1px var(--ink)}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--ink);cursor:pointer;border:3px solid var(--paper)}
+  .scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:6px}
+  .seg{display:flex;border:1px solid var(--ink);margin-top:6px}
+  .seg button{flex:1;background:transparent;border:0;font-family:inherit;font-size:13.5px;padding:9px 0;cursor:pointer;color:var(--ink)}
+  .seg button.on{background:var(--ink);color:var(--paper)}
+  .presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .chip{border:1px solid var(--rule);background:transparent;color:var(--ink);font-family:inherit;font-size:12.5px;padding:7px 12px;cursor:pointer}
+  .chip:hover,.chip.on{border-color:var(--accent);color:var(--accent)}
+
+  /* ---- the BP page ---- */
+  .bp{background:var(--white);border:1px solid var(--rule);padding:34px 38px;position:relative}
+  .bp::before{content:"机密 · 商业计划书 · 第一页";position:absolute;top:12px;right:16px;font-size:10px;letter-spacing:.14em;color:var(--dead);text-transform:uppercase}
+  .bp h2{font-size:24px;margin:0 0 4px}
+  .bp .sub{font-size:12.5px;color:var(--muted);margin-bottom:22px}
+  .line{padding:13px 0;border-bottom:1px solid var(--rule);font-size:15.5px;line-height:1.7;transition:opacity 300ms}
+  .line .lbl{display:block;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+  .line .txt{transition:all 300ms}
+  .line .txt em{font-style:normal;color:var(--accent);font-weight:600}
+  .line.dead .txt{color:var(--dead);text-decoration:line-through}
+  .line.dead .lbl{color:var(--dead)}
+  .line.flip .txt{animation:flip 420ms}
+  @keyframes flip{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:none}}
+  .verdict-band{margin-top:22px;background:var(--ink);color:var(--paper);padding:16px 18px}
+  .verdict-band .serif{font-size:18px;line-height:1.5;margin:0}
+  .verdict-band .tiny{color:#a89e90;margin-top:8px}
+  .num-strip{display:flex;gap:26px;margin-top:18px;flex-wrap:wrap}
+  .num .n{font-family:"Noto Serif SC",serif;font-size:26px;font-weight:700}
+  .num .l{font-size:11px;color:var(--muted);letter-spacing:.06em}
+  footer{padding:30px 0 50px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--rule);margin-top:36px}
+  @media(max-width:880px){.layout{grid-template-columns:1fr}.bp{padding:24px 20px}}
+  @media print{body{background:#fff}.ctrl,.presets{display:none}.layout{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mast-top"><span>独立求职作品 · 商业判断</span><span>2026.08.30</span></div>
+    <p class="kicker">One-Page BP Simulator</p>
+    <h1>一页 BP 推演器</h1>
+    <p class="lead">商业计划书的第一页，每个数字都拴着一句话。动左边任何一个数，右边那句话当场死去或活过来。</p>
+    <div class="meta">
+      <div>作者：新闻学本科 · 大四</div>
+      <div>岗位：AI 产品经理实习</div>
+      <div>方法：三个变量 · 一页纸 · 每句话都有死因</div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+    <div class="layout">
+
+      <!-- CONTROLS -->
+      <div class="ctrl">
+        <h3>三个变量</h3>
+        <p class="tiny" style="margin:0 0 6px">拖一拖，看右边哪句话活不下去。</p>
+
+        <div class="slider-block">
+          <div class="slider-head"><span class="small">客单价</span><span class="val" id="priceVal">¥1,999</span></div>
+          <input type="range" id="price" min="299" max="4999" step="100" value="1999" />
+          <div class="scale-labels"><span>¥299</span><span>¥4,999</span></div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span class="small">内容订阅（月）</span><span class="val" id="subVal">¥0</span></div>
+          <input type="range" id="sub" min="0" max="99" step="1" value="0" />
+          <div class="scale-labels"><span>免费</span><span>¥99/月</span></div>
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-head"><span class="small">卖给谁</span></div>
+          <div class="seg" id="segBC">
+            <button class="on" data-v="c">2C · 个人</button>
+            <button data-v="b">2B · 商家</button>
+          </div>
+        </div>
+
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <!-- BP PAGE -->
+      <div class="bp">
+        <h2 id="bpName">「同桌」桌面陪伴机器人</h2>
+        <div class="sub">商业计划书 · 第一页 · 实时推演稿</div>
+
+        <div class="num-strip">
+          <div class="num"><div class="n" id="nPrice">¥1,999</div><div class="l">客单价</div></div>
+          <div class="num"><div class="n" id="nSub">¥0/月</div><div class="l">内容订阅</div></div>
+          <div class="num"><div class="n" id="nModel">2C</div><div class="l">模式</div></div>
+          <div class="num"><div class="n" id="nYear">—</div><div class="l">单用户三年价值</div></div>
+        </div>
+
+        <div style="margin-top:18px">
+          <div class="line" id="line1"><span class="lbl">一句话定位</span><span class="txt"></span></div>
+          <div class="line" id="line2"><span class="lbl">用户为什么买</span><span class="txt"></span></div>
+          <div class="line" id="line3"><span class="lbl">护城河</span><span class="txt"></span></div>
+          <div class="line" id="line4"><span class="lbl">第一年不做</span><span class="txt"></span></div>
+          <div class="line" id="line5"><span class="lbl">最大的风险</span><span class="txt"></span></div>
+        </div>
+
+        <div class="verdict-band">
+          <p class="serif" id="verdict"></p>
+          <p class="tiny" id="verdictSub"></p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    《一页 BP 推演器》独立作品 · 用于实习投递 · 所有判断为作者基于公开资料的分析，非投资建议，不代表任何公司内部结论。
+  </div>
+</footer>
+
+<script>
+var price = document.getElementById("price");
+var sub = document.getElementById("sub");
+var segBC = document.getElementById("segBC");
+var mode = "c";
+
+function fmt(n){ return "¥" + Number(n).toLocaleString(); }
+
+/* ---------- the writing engine ---------- */
+function build(){
+  var p = +price.value, s = +sub.value, b = mode === "b";
+  var ltv = p + s * 12 * 3;
+
+  document.getElementById("priceVal").textContent = fmt(p);
+  document.getElementById("subVal").textContent = s === 0 ? "¥0" : fmt(s);
+  document.getElementById("nPrice").textContent = fmt(p);
+  document.getElementById("nSub").textContent = fmt(s) + "/月";
+  document.getElementById("nModel").textContent = b ? "2B" : "2C";
+  document.getElementById("nYear").textContent = fmt(ltv);
+
+  /* line 1 · 定位 */
+  var l1, d1 = false;
+  if(b){
+    l1 = p < 1500
+      ? "一张会迎宾的<em>脸</em>，租给不想雇前台的小店。"
+      : "一套能放在前台的<em>接待系统</em>，按年收费。";
+  } else if(p <= 599){
+    l1 = "一个<em>带眼睛的音箱</em>。这个价位撑不起「陪伴」两个字，只能撑得起「好玩」。";
+    d1 = true;
+  } else if(p <= 2499){
+    l1 = "独居青年桌上的<em>一个活物</em>——先有用，再长感情。";
+  } else {
+    l1 = "一件<em>情感耐用品</em>。这个价位用户买的不是功能，是「它会陪我很多年」的承诺。";
+  }
+
+  /* line 2 · 为什么买 */
+  var l2;
+  if(b){
+    l2 = "老板算的是账：它比一个人力前台便宜，比一块没有脸的屏幕<em>少让人烦躁</em>。";
+  } else if(p <= 599){
+    l2 = "冲动消费。买它像买一个盲盒——所以复购和留存都别指望，第一波流量就是全部。";
+  } else if(s > 30){
+    l2 = "用户先为「被记得」付硬件的钱，再为「明天还有下文」付订阅的钱。<em>订阅成立的前提是记忆真的连续</em>。";
+  } else {
+    l2 = "用户为「被记得」付一次钱。它记得你昨天哼的歌，这件事值两千块。";
+  }
+
+  /* line 3 · 护城河 */
+  var l3, d3 = false;
+  if(b){
+    l3 = "没有护城河，只有<em>转换成本</em>：一旦它认识了这家店的常客，老板就换不掉它了。";
+  } else if(s > 0 && s <= 30){
+    l3 = "轻度订阅 + 本地记忆。护城河是<em>用户舍不得删掉的过去</em>。";
+  } else if(s > 30){
+    l3 = "重订阅模式。护城河理论上很深，但 Vector 已经演示过结局：<em>用户会觉得自己被感情绑架了</em>。";
+    d3 = true;
+  } else {
+    l3 = "人设与记忆全部本地可运行。护城河是信任——<em>「公司倒了它还在」这句话本身就能卖钱</em>，Moxie 的葬礼就是最好的广告。";
+  }
+
+  /* line 4 · 第一年不做 */
+  var l4;
+  if(b){
+    l4 = "不做个性、不做撒娇、不做「它也有小情绪」。<em>前台机器人一旦开始卖萌，就是灾难。</em>";
+  } else if(p <= 599){
+    l4 = "不做深度陪伴、不做记忆系统。这个成本结构里，<em>每多一点感情都是亏损</em>。";
+  } else if(p >= 2500){
+    l4 = "不做儿童、不做医疗承诺、不替代真人探视。高价情感产品一旦越界，<em>就是伦理事故，不是公关事故</em>。";
+  } else {
+    l4 = "不做全屋移动、不做儿童、不做开放平台。守住一张桌子，把「被记得」做穿。";
+  }
+
+  /* line 5 · 风险 */
+  var l5;
+  if(b){
+    l5 = "2B 的死法是「试点很成功，然后没有然后」。第一年必须签到一个<em>愿意付年费</em>的连锁客户，否则全是样机。";
+  } else if(s > 30){
+    l5 = "订阅是把双刃剑：它给你现金流，也给用户一个每月重新决定「要不要继续爱它」的机会。<em>大多数人会在第四个月说不。</em>";
+  } else if(p >= 2500){
+    l5 = "高价等于高承诺。用户会默认它「应该一直在」，所以最大的风险是<em>公司自己活不过产品的承诺</em>。";
+  } else {
+    l5 = "这个价位最危险的不是没人买，是买的人第三周就腻了。<em>新鲜感衰减比硬件故障杀死更多陪伴机器人。</em>";
+  }
+
+  /* verdict */
+  var v, vs;
+  if(b){
+    v = "这是一门生意，不是一个产品。";
+    vs = "2B 逻辑成立：算账、签单、收年费。它不会上新闻，但能活。创始人要的那一页，你写出来了。";
+  } else if(p <= 599){
+    v = "这就不是陪伴产品了，是带眼睛的音箱。";
+    vs = "¥" + p + " 撑不起记忆系统和情感设计的成本。要么涨价，要么承认它是个玩具——玩具也能赚钱，但别用陪伴的 BP 去融陪伴的钱。";
+  } else if(s > 30){
+    v = "你在向用户的感情收月租。";
+    vs = "¥" + s + "/月的订阅，等于每月让用户重新决定要不要继续这段关系。Vector 试过，用户觉得自己被绑架了。这个数字我建议降。";
+  } else if(p >= 2500 && s === 0){
+    v = "这是最难做、也最值钱的一页。";
+    vs = "高价 + 无订阅 + 本地记忆，意味着你赌的是「信任本身能溢价」。Moxie 死后，市场上正好空出这个位置。";
+  } else {
+    v = "这一页能过会。";
+    vs = "¥" + p + " 落在 EMO 和 Loona 之间，订阅克制，定位清晰。它不完美，但每一句都站得住——这就超过大多数 BP 了。";
+  }
+
+  return {lines:[
+    {el:"line1", txt:l1, dead:d1},
+    {el:"line2", txt:l2, dead:false},
+    {el:"line3", txt:l3, dead:d3},
+    {el:"line4", txt:l4, dead:false},
+    {el:"line5", txt:l5, dead:false}
+  ], verdict:v, verdictSub:vs};
+}
+
+var lastTxts = {};
+function render(){
+  var r = build();
+  r.lines.forEach(function(l){
+    var el = document.getElementById(l.el);
+    var txt = el.querySelector(".txt");
+    el.classList.toggle("dead", l.dead);
+    if(lastTxts[l.el] !== l.txt){
+      txt.innerHTML = l.txt;
+      el.classList.remove("flip");
+      void el.offsetWidth;
+      el.classList.add("flip");
+      lastTxts[l.el] = l.txt;
+    }
+  });
+  document.getElementById("verdict").textContent = r.verdict;
+  document.getElementById("verdictSub").textContent = r.verdictSub;
+}
+
+price.addEventListener("input", render);
+sub.addEventListener("input", render);
+segBC.querySelectorAll("button").forEach(function(b){
+  b.onclick = function(){
+    segBC.querySelectorAll("button").forEach(function(x){ x.classList.remove("on"); });
+    b.classList.add("on");
+    mode = b.dataset.v;
+    render();
+  };
+});
+
+/* presets */
+var PRESETS = [
+  {name:"Moxie 的配方", p:3299, s:39, m:"c"},
+  {name:"Vector 的配方", p:2899, s:70, m:"c"},
+  {name:"带眼睛的音箱", p:499, s:0, m:"c"},
+  {name:"我的建议", p:1999, s:0, m:"c"},
+  {name:"2B 前台", p:1299, s:0, m:"b"}
+];
+var presetsEl = document.getElementById("presets");
+PRESETS.forEach(function(pr){
+  var c = document.createElement("button");
+  c.className = "chip";
+  c.textContent = pr.name;
+  c.onclick = function(){
+    price.value = pr.p; sub.value = pr.s; mode = pr.m;
+    segBC.querySelectorAll("button").forEach(function(x){ x.classList.toggle("on", x.dataset.v === pr.m); });
+    [].forEach.call(presetsEl.children, function(x){ x.classList.remove("on"); });
+    c.classList.add("on");
+    render();
+  };
+  presetsEl.appendChild(c);
+});
+
+render();
+</script>
+</body>
+</html>
