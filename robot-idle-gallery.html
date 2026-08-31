@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>等待不是待机：5 种 90 秒空白动作形态</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --panel: #151922;
+      --panel-2: #1c2130;
+      --border: #2a3142;
+      --text: #e8ebf0;
+      --muted: #8b93a7;
+      --accent: #4a9eff;
+      --accent-2: #6ee7b7;
+      --danger: #f87171;
+      --shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto 20px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 26px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 14px;
+      max-width: 720px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      max-width: 1200px;
+      margin: 0 auto 20px;
+    }
+
+    .tab {
+      padding: 10px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+
+    .tab:hover { border-color: var(--accent); color: var(--text); }
+    .tab.active {
+      border-color: var(--accent);
+      color: var(--text);
+      background: linear-gradient(180deg, rgba(74, 158, 255, 0.16) 0%, rgba(74, 158, 255, 0.08) 100%);
+    }
+
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 960px) {
+      .main { grid-template-columns: 1fr; }
+    }
+
+    .stage {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-height: 440px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 20px 60px var(--shadow);
+    }
+
+    .stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 60%, rgba(74, 158, 255, 0.06) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .stage-label {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      font-weight: 500;
+    }
+
+    .timer {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 16px;
+      color: var(--accent);
+      background: rgba(74, 158, 255, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(74, 158, 255, 0.2);
+    }
+
+    /* Robot */
+    .robot {
+      position: relative;
+      width: 120px;
+      height: 240px;
+      transition: transform 0.5s ease;
+    }
+
+    .robot-head {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #e5e7eb 0%, #d1d5db 60%, #9ca3af 100%);
+      border: 2px solid #6b7280;
+      transition: transform 0.5s ease;
+      z-index: 3;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .face {
+      position: absolute;
+      top: 20px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .eye {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent), 0 0 20px rgba(74, 158, 255, 0.5);
+      transition: opacity 0.2s ease, transform 0.3s ease;
+    }
+
+    .eye.blink { opacity: 0.15; }
+    .eye.look-left { transform: translateX(-2px); }
+    .eye.look-right { transform: translateX(2px); }
+
+    .neck {
+      position: absolute;
+      top: 56px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 18px;
+      height: 20px;
+      background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+      z-index: 2;
+      border-radius: 0 0 4px 4px;
+    }
+
+    .torso {
+      position: absolute;
+      top: 74px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70px;
+      height: 92px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, #4b5563 0%, #374151 100%);
+      border: 2px solid #4b5563;
+      z-index: 2;
+      transition: transform 0.5s ease;
+      transform-origin: center bottom;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .chest {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(74, 158, 255, 0.18);
+      border: 1px solid rgba(74, 158, 255, 0.35);
+      box-shadow: 0 0 12px rgba(74, 158, 255, 0.15);
+    }
+
+    .shoulder {
+      position: absolute;
+      top: 82px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+      z-index: 1;
+    }
+    .shoulder.left { left: 12px; }
+    .shoulder.right { right: 12px; }
+
+    .arm {
+      position: absolute;
+      top: 96px;
+      width: 13px;
+      height: 60px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #6b7280 0%, #4b5563 100%);
+      transform-origin: top center;
+      transition: transform 0.5s ease;
+      z-index: 1;
+    }
+    .arm.left { left: 16px; }
+    .arm.right { right: 16px; }
+
+    .forearm {
+      position: absolute;
+      top: 52px;
+      left: 0;
+      width: 13px;
+      height: 48px;
+      border-radius: 6px;
+      background: linear-gradient(180deg, #9ca3af 0%, #6b7280 100%);
+      transform-origin: top center;
+      transition: transform 0.5s ease;
+    }
+
+    .base {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 84px;
+      height: 40px;
+      border-radius: 12px 12px 6px 6px;
+      background: linear-gradient(180deg, #1f2937 0%, #111827 100%);
+      border: 2px solid #374151;
+      z-index: 0;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .base-glow {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 44px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      opacity: 0.5;
+      filter: blur(8px);
+    }
+
+    /* Animations */
+    @keyframes headScan {
+      0%, 100% { transform: translateX(-50%) rotateY(0deg); }
+      25% { transform: translateX(-50%) rotateY(-24deg); }
+      75% { transform: translateX(-50%) rotateY(24deg); }
+    }
+    .head-scan .robot-head { animation: headScan 4s ease-in-out infinite; }
+
+    @keyframes headScanWide {
+      0%, 100% { transform: translateX(-50%) rotateY(0deg); }
+      25% { transform: translateX(-50%) rotateY(-30deg); }
+      75% { transform: translateX(-50%) rotateY(30deg); }
+    }
+    .head-scan-wide .robot-head { animation: headScanWide 4s ease-in-out infinite; }
+
+    @keyframes torsoBreathe {
+      0%, 100% { transform: translateX(-50%) scaleY(1) translateY(0); }
+      50% { transform: translateX(-50%) scaleY(1.03) translateY(-2px); }
+    }
+    .torso-breathe .torso { animation: torsoBreathe 4s ease-in-out infinite; }
+
+    @keyframes weightShiftLeft {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-12px) rotateZ(-2deg); }
+    }
+    .weight-left { animation: weightShiftLeft 4s ease-in-out infinite; }
+
+    @keyframes weightShiftRight {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(12px) rotateZ(2deg); }
+    }
+    .weight-right { animation: weightShiftRight 4s ease-in-out infinite; }
+
+    @keyframes gazeDrop {
+      0%, 100% { transform: translateX(-50%) rotateX(0deg); }
+      50% { transform: translateX(-50%) rotateX(20deg); }
+    }
+    .head-gaze .robot-head { animation: gazeDrop 4s ease-in-out infinite; }
+
+    @keyframes touchRight {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-38deg) translateY(10px); }
+    }
+    @keyframes forearmRight {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(-60deg); }
+    }
+    .touch-right .arm.right { animation: touchRight 3s ease-in-out infinite; }
+    .touch-right .arm.right .forearm { animation: forearmRight 3s ease-in-out infinite; }
+
+    @keyframes touchLeft {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(38deg) translateY(10px); }
+    }
+    @keyframes forearmLeft {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(60deg); }
+    }
+    .touch-left .arm.left { animation: touchLeft 3s ease-in-out infinite; }
+    .touch-left .arm.left .forearm { animation: forearmLeft 3s ease-in-out infinite; }
+
+    @keyframes microTurn {
+      0%, 100% { transform: translateX(-50%) rotateY(0deg); }
+      50% { transform: translateX(-50%) rotateY(12deg); }
+    }
+    .torso-turn .torso { animation: microTurn 3s ease-in-out infinite; }
+    .head-turn .robot-head { animation: headScan 2.5s ease-in-out infinite; }
+
+    @keyframes resetSettle {
+      0% { transform: translateY(-3px); }
+      100% { transform: translateY(0); }
+    }
+    .robot-settle { animation: resetSettle 1s ease-out forwards; }
+
+    /* Sidebar */
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      box-shadow: 0 10px 40px var(--shadow);
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    .current-segment {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .current-meta {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .current-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .segment-list {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-right: -6px;
+    }
+
+    .segment {
+      display: flex;
+      gap: 10px;
+      padding: 10px 12px;
+      margin: 0 -12px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0.55;
+      transition: all 0.2s;
+      cursor: pointer;
+      border-left: 3px solid transparent;
+    }
+    .segment:hover { opacity: 0.85; background: rgba(255, 255, 255, 0.03); }
+    .segment.active {
+      opacity: 1;
+      background: var(--panel-2);
+    }
+    .segment.active .seg-time { color: var(--accent); }
+    .segment.active .seg-name { color: var(--text); font-weight: 600; }
+    .segment.active .seg-bar { opacity: 1; }
+
+    .seg-bar {
+      width: 4px;
+      border-radius: 2px;
+      flex-shrink: 0;
+      margin-right: 6px;
+      opacity: 0.4;
+      transition: opacity 0.2s;
+    }
+
+    .seg-content { flex: 1; min-width: 0; }
+    .seg-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px; }
+    .seg-time {
+      width: 44px;
+      flex-shrink: 0;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+    }
+    .seg-name { color: var(--text); font-weight: 500; }
+    .seg-desc { color: var(--muted); font-size: 12px; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .segment:hover .seg-desc { white-space: normal; }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--accent); background: var(--panel); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn.primary:hover { background: #3b8de6; }
+
+    .progress-wrap { margin-top: 8px; }
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .progress-track {
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg);
+      overflow: visible;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--accent);
+      border-radius: 4px;
+      transition: width 0.1s linear;
+    }
+    .progress-handle {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      transform: translate(-50%, -50%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      border: 2px solid var(--accent);
+      box-shadow: 0 0 8px rgba(74, 158, 255, 0.6);
+      pointer-events: none;
+      transition: left 0.1s linear;
+    }
+
+    .mini-timeline {
+      margin-top: 18px;
+    }
+    .mini-timeline-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .timeline-ruler {
+      display: flex;
+      height: 32px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      position: relative;
+    }
+    .timeline-ruler:hover { border-color: var(--accent); }
+    .timeline-segment {
+      height: 100%;
+      border-right: 1px solid var(--panel);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.8);
+      overflow: hidden;
+      white-space: nowrap;
+      transition: filter 0.2s;
+    }
+    .timeline-segment:last-child { border-right: none; }
+    .timeline-segment:hover { filter: brightness(1.15); }
+    .timeline-playhead {
+      position: absolute;
+      top: -4px;
+      bottom: -4px;
+      width: 3px;
+      background: #fff;
+      border-radius: 2px;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+      pointer-events: none;
+      transition: left 0.1s linear;
+      z-index: 2;
+    }
+    .timeline-scrubbing .timeline-playhead,
+    .timeline-scrubbing .progress-handle {
+      transition: none;
+    }
+
+    .form-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      max-width: 1200px;
+      margin: 16px auto 0;
+    }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot.scan { background: var(--accent); }
+    .dot.breathe { background: var(--accent-2); }
+    .dot.weight { background: #fbbf24; }
+    .dot.gaze { background: #a78bfa; }
+    .dot.touch { background: #f87171; }
+    .dot.turn { background: #fb923c; }
+    .dot.reset { background: #9ca3af; }
+
+    /* Scrollbar */
+    .segment-list::-webkit-scrollbar { width: 6px; }
+    .segment-list::-webkit-scrollbar-track { background: transparent; }
+    .segment-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .segment-list::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>等待不是待机：5 种 90 秒空白动作形态</h1>
+    <div class="subtitle">人形机器人在无人对话时的“安静在场”状态。点击下方标签切换形态，拖动进度条或时间轴任意位置即可跳转，方便面试官快速查阅。</div>
+  </header>
+
+  <nav class="tabs" id="tabs"></nav>
+
+  <div class="main">
+    <div class="stage">
+      <div class="stage-label">动作演示</div>
+      <div class="timer" id="timer">00.0s</div>
+      <div class="robot" id="robot">
+        <div class="robot-head">
+          <div class="face">
+            <div class="eye left"></div>
+            <div class="eye right"></div>
+          </div>
+        </div>
+        <div class="neck"></div>
+        <div class="torso">
+          <div class="chest"></div>
+        </div>
+        <div class="shoulder left"></div>
+        <div class="shoulder right"></div>
+        <div class="arm left"><div class="forearm left"></div></div>
+        <div class="arm right"><div class="forearm right"></div></div>
+        <div class="base"><div class="base-glow"></div></div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="card">
+        <h3>形态</h3>
+        <div class="current-segment" id="form-title">-</div>
+        <div class="form-desc" id="form-desc">-</div>
+      </div>
+
+      <div class="card">
+        <h3>当前动作</h3>
+        <div class="current-meta">
+          <span id="current-time">0-0s</span>
+          <span id="current-intensity">-</span>
+        </div>
+        <div class="current-segment" id="current-name" style="font-size: 20px;">-</div>
+        <div class="current-desc" id="current-desc">-</div>
+      </div>
+
+      <div class="card">
+        <h3>90 秒时间轴</h3>
+        <div class="segment-list" id="segment-list"></div>
+      </div>
+
+      <div class="card">
+        <h3>控制与拖拽</h3>
+        <div class="controls">
+          <button class="btn primary" id="play-btn">暂停</button>
+          <button class="btn" id="reset-btn">重播</button>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>90 秒进度</span><span id="progress-text">0%</span></div>
+          <div class="progress-track" id="progress-track">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-handle" id="progress-handle"></div>
+          </div>
+        </div>
+        <div class="mini-timeline">
+          <div class="mini-timeline-label"><span>分段预览</span><span>点击任意色块跳转</span></div>
+          <div class="timeline-ruler" id="timeline-ruler">
+            <div class="timeline-playhead" id="timeline-playhead"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><div class="dot scan"></div> 环境扫描</span>
+    <span><div class="dot breathe"></div> 呼吸静止</span>
+    <span><div class="dot weight"></div> 重心微移</span>
+    <span><div class="dot gaze"></div> 视线低垂</span>
+    <span><div class="dot touch"></div> 指尖触碰</span>
+    <span><div class="dot turn"></div> 微转向</span>
+    <span><div class="dot reset"></div> 复位</span>
+  </div>
+
+  <script>
+    const actionClasses = {
+      scan: ['head-scan', 'torso-breathe'],
+      scanWide: ['head-scan-wide', 'torso-breathe'],
+      breathe: ['torso-breathe'],
+      weightLeft: ['weight-left', 'torso-breathe'],
+      weightRight: ['weight-right', 'torso-breathe'],
+      gaze: ['head-gaze', 'torso-breathe'],
+      touchRight: ['touch-right', 'torso-breathe'],
+      touchLeft: ['touch-left', 'torso-breathe'],
+      turn: ['torso-turn', 'head-turn', 'torso-breathe'],
+      reset: ['robot-settle', 'torso-breathe'],
+    };
+
+    const actionColors = {
+      scan: 'var(--accent)',
+      scanWide: 'var(--accent)',
+      breathe: 'var(--accent-2)',
+      weightLeft: '#fbbf24',
+      weightRight: '#fbbf24',
+      gaze: '#a78bfa',
+      touchRight: '#f87171',
+      touchLeft: '#f87171',
+      turn: '#fb923c',
+      reset: '#9ca3af',
+    };
+
+    const actionIntensity = {
+      scan: '30%',
+      scanWide: '35%',
+      breathe: '10%',
+      weightLeft: '25%',
+      weightRight: '25%',
+      gaze: '20%',
+      touchRight: '15%',
+      touchLeft: '15%',
+      turn: '30%',
+      reset: '25%',
+    };
+
+    const forms = [
+      {
+        id: 'alert',
+        name: '警觉观察者',
+        desc: '高频率观察环境，适合需要保持警觉的迎宾、展厅或前台场景。扫描占比高，休息段短。',
+        segments: [
+          { start: 0, end: 8, action: 'scan', name: '环境扫描', desc: '头部左右缓慢扫视，保持警觉' },
+          { start: 8, end: 12, action: 'turn', name: '微转向', desc: '躯干向右侧声源微转 8°' },
+          { start: 12, end: 20, action: 'scanWide', name: '宽幅扫描', desc: '扫描幅度加大，确认周围动态' },
+          { start: 20, end: 26, action: 'breathe', name: '呼吸静止', desc: '短暂静止，降低焦躁感' },
+          { start: 26, end: 34, action: 'scan', name: '环境扫描', desc: '重新聚焦周围环境' },
+          { start: 34, end: 38, action: 'turn', name: '微转向', desc: '对左侧动静做出最小反应' },
+          { start: 38, end: 48, action: 'scanWide', name: '宽幅扫描', desc: '再次扩大观察范围' },
+          { start: 48, end: 56, action: 'breathe', name: '呼吸静止', desc: '在两次扫描之间插入休息' },
+          { start: 56, end: 64, action: 'scan', name: '环境扫描', desc: '恢复常态观察' },
+          { start: 64, end: 70, action: 'gaze', name: '视线低垂', desc: '短暂低头，避免一直紧盯' },
+          { start: 70, end: 78, action: 'scan', name: '环境扫描', desc: '抬头继续观察' },
+          { start: 78, end: 84, action: 'reset', name: '复位', desc: '回到中立姿态' },
+          { start: 84, end: 90, action: 'breathe', name: '呼吸静止', desc: '回到开放等待姿态' },
+        ],
+      },
+      {
+        id: 'quiet',
+        name: '安静休息者',
+        desc: '以呼吸静止为主，动作极少，适合角落待机或低功耗模式。让机器人看起来“在场但安静”。',
+        segments: [
+          { start: 0, end: 14, action: 'breathe', name: '呼吸静止', desc: '胸部轻微起伏，几乎静止' },
+          { start: 14, end: 20, action: 'gaze', name: '视线低垂', desc: '头部下俯，进入休息状态' },
+          { start: 20, end: 34, action: 'breathe', name: '呼吸静止', desc: '维持低能耗姿态' },
+          { start: 34, end: 40, action: 'weightLeft', name: '重心微移', desc: '重心左移，打破僵硬' },
+          { start: 40, end: 54, action: 'breathe', name: '呼吸静止', desc: '继续安静呼吸' },
+          { start: 54, end: 60, action: 'touchRight', name: '指尖触碰', desc: '右手轻触左前臂，自我安抚' },
+          { start: 60, end: 74, action: 'breathe', name: '呼吸静止', desc: '回到深度静止' },
+          { start: 74, end: 80, action: 'gaze', name: '视线低垂', desc: '再次低头' },
+          { start: 80, end: 86, action: 'reset', name: '复位', desc: '缓慢回到中立' },
+          { start: 86, end: 90, action: 'breathe', name: '呼吸静止', desc: '保持安静等待' },
+        ],
+      },
+      {
+        id: 'curious',
+        name: '好奇探索者',
+        desc: '对环境声音和移动目标频繁做出最小反应，适合互动展厅或儿童陪伴场景。活泼但不焦躁。',
+        segments: [
+          { start: 0, end: 6, action: 'scan', name: '环境扫描', desc: '左右扫视' },
+          { start: 6, end: 10, action: 'turn', name: '微转向', desc: '向右侧声音源转动' },
+          { start: 10, end: 16, action: 'scan', name: '环境扫描', desc: '聚焦该方向' },
+          { start: 16, end: 20, action: 'turn', name: '微转向', desc: '向左侧转动' },
+          { start: 20, end: 26, action: 'scan', name: '环境扫描', desc: '再次扫视' },
+          { start: 26, end: 30, action: 'weightRight', name: '重心微移', desc: '重心右移' },
+          { start: 30, end: 36, action: 'scan', name: '环境扫描', desc: '恢复观察' },
+          { start: 36, end: 42, action: 'turn', name: '微转向', desc: '对新目标做反应' },
+          { start: 42, end: 50, action: 'scanWide', name: '宽幅扫描', desc: '扩大好奇范围' },
+          { start: 50, end: 56, action: 'breathe', name: '呼吸静止', desc: '短暂停顿' },
+          { start: 56, end: 62, action: 'scan', name: '环境扫描', desc: '继续扫视' },
+          { start: 62, end: 68, action: 'touchRight', name: '指尖触碰', desc: '手部小动作' },
+          { start: 68, end: 76, action: 'scan', name: '环境扫描', desc: '保持好奇' },
+          { start: 76, end: 82, action: 'turn', name: '微转向', desc: '跟随新目标' },
+          { start: 82, end: 86, action: 'reset', name: '复位', desc: '回中' },
+          { start: 86, end: 90, action: 'breathe', name: '呼吸静止', desc: '回到开放姿态' },
+        ],
+      },
+      {
+        id: 'regulator',
+        name: '自我调适者',
+        desc: '通过重心转移和自我触摸来保持身体舒适，适合长时间待机。动作具有人格温度，像人类整理姿态。',
+        segments: [
+          { start: 0, end: 8, action: 'breathe', name: '呼吸静止', desc: '开始放松' },
+          { start: 8, end: 14, action: 'weightLeft', name: '重心微移', desc: '重心左移' },
+          { start: 14, end: 22, action: 'breathe', name: '呼吸静止', desc: '保持放松' },
+          { start: 22, end: 28, action: 'touchRight', name: '指尖触碰', desc: '右手轻触左前臂' },
+          { start: 28, end: 34, action: 'breathe', name: '呼吸静止', desc: '呼吸' },
+          { start: 34, end: 40, action: 'weightRight', name: '重心微移', desc: '重心右移' },
+          { start: 40, end: 46, action: 'touchLeft', name: '指尖触碰', desc: '左手轻触右臂' },
+          { start: 46, end: 54, action: 'breathe', name: '呼吸静止', desc: '安静' },
+          { start: 54, end: 60, action: 'weightLeft', name: '重心微移', desc: '重心再次左移' },
+          { start: 60, end: 66, action: 'touchRight', name: '指尖触碰', desc: '再次自我触摸' },
+          { start: 66, end: 74, action: 'breathe', name: '呼吸静止', desc: '深度放松' },
+          { start: 74, end: 80, action: 'weightRight', name: '重心微移', desc: '重心右移' },
+          { start: 80, end: 86, action: 'touchLeft', name: '指尖触碰', desc: '整理姿态' },
+          { start: 86, end: 90, action: 'reset', name: '复位', desc: '回到等待姿态' },
+        ],
+      },
+      {
+        id: 'balanced',
+        name: '平衡综合者',
+        desc: '标准 90 秒循环，观察、休息、好奇、自我调适四个阶段均衡分布，适合通用场景。',
+        segments: [
+          { start: 0, end: 5, action: 'scan', name: '环境扫描', desc: '头部左右扫视' },
+          { start: 5, end: 12, action: 'breathe', name: '呼吸静止', desc: '胸部缓慢起伏' },
+          { start: 12, end: 17, action: 'weightLeft', name: '重心微移', desc: '重心左移' },
+          { start: 17, end: 26, action: 'breathe', name: '呼吸静止', desc: '进入安静' },
+          { start: 26, end: 30, action: 'gaze', name: '视线低垂', desc: '头部下俯' },
+          { start: 30, end: 34, action: 'touchRight', name: '指尖触碰', desc: '右手轻触左前臂' },
+          { start: 34, end: 40, action: 'breathe', name: '呼吸静止', desc: '维持低能量' },
+          { start: 40, end: 46, action: 'scanWide', name: '宽幅扫描', desc: '抬头并扩大扫描' },
+          { start: 46, end: 50, action: 'turn', name: '微转向', desc: '向右侧声源转动' },
+          { start: 50, end: 57, action: 'breathe', name: '呼吸静止', desc: '保持观察后姿态' },
+          { start: 57, end: 62, action: 'gaze', name: '视线低垂', desc: '短暂低头' },
+          { start: 62, end: 66, action: 'reset', name: '复位', desc: '回到中立位' },
+          { start: 66, end: 73, action: 'weightRight', name: '重心微移', desc: '重心右移' },
+          { start: 73, end: 79, action: 'breathe', name: '呼吸静止', desc: '安静' },
+          { start: 79, end: 84, action: 'touchLeft', name: '指尖触碰', desc: '左手轻触右臂' },
+          { start: 84, end: 87, action: 'reset', name: '复位', desc: '小幅回中' },
+          { start: 87, end: 90, action: 'breathe', name: '呼吸静止', desc: '回到开放等待姿态' },
+        ],
+      },
+    ];
+
+    let currentFormIndex = 0;
+    let isPlaying = true;
+    let startTime = performance.now();
+    let elapsed = 0;
+    let rafId = null;
+    let isScrubbing = false;
+
+    const tabsEl = document.getElementById('tabs');
+    const robotEl = document.getElementById('robot');
+    const timerEl = document.getElementById('timer');
+    const formTitleEl = document.getElementById('form-title');
+    const formDescEl = document.getElementById('form-desc');
+    const currentNameEl = document.getElementById('current-name');
+    const currentDescEl = document.getElementById('current-desc');
+    const currentTimeEl = document.getElementById('current-time');
+    const currentIntensityEl = document.getElementById('current-intensity');
+    const segmentListEl = document.getElementById('segment-list');
+    const playBtn = document.getElementById('play-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const progressTrack = document.getElementById('progress-track');
+    const progressBar = document.getElementById('progress-bar');
+    const progressHandle = document.getElementById('progress-handle');
+    const timelineRuler = document.getElementById('timeline-ruler');
+    const timelinePlayhead = document.getElementById('timeline-playhead');
+    const progressText = document.getElementById('progress-text');
+
+    function buildTabs() {
+      tabsEl.innerHTML = '';
+      forms.forEach((form, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'tab' + (idx === currentFormIndex ? ' active' : '');
+        btn.textContent = form.name;
+        btn.onclick = () => switchForm(idx);
+        tabsEl.appendChild(btn);
+      });
+    }
+
+    function buildTimelineRuler() {
+      timelineRuler.innerHTML = '';
+      timelineRuler.appendChild(timelinePlayhead);
+      const form = forms[currentFormIndex];
+      form.segments.forEach((seg, idx) => {
+        const duration = seg.end - seg.start;
+        const el = document.createElement('div');
+        el.className = 'timeline-segment';
+        el.style.width = `${(duration / 90) * 100}%`;
+        el.style.background = actionColors[seg.action] || '#9ca3af';
+        el.textContent = duration >= 5 ? seg.name : '';
+        el.title = `${seg.start}-${seg.end}s ${seg.name}: ${seg.desc}`;
+        el.onclick = (e) => {
+          e.stopPropagation();
+          seekTo(seg.start + 0.1);
+        };
+        timelineRuler.appendChild(el);
+      });
+    }
+
+    function buildSegmentList() {
+      segmentListEl.innerHTML = '';
+      const form = forms[currentFormIndex];
+      form.segments.forEach((seg, idx) => {
+        const div = document.createElement('div');
+        div.className = 'segment';
+        div.id = `seg-${idx}`;
+        div.innerHTML = `
+          <div class="seg-bar" style="background:${actionColors[seg.action] || '#9ca3af'}"></div>
+          <div class="seg-content">
+            <div class="seg-row">
+              <div class="seg-time">${seg.start}-${seg.end}s</div>
+              <div class="seg-name">${seg.name}</div>
+            </div>
+            <div class="seg-desc">${seg.desc}</div>
+          </div>
+        `;
+        div.onclick = () => seekTo(seg.start + 0.1);
+        segmentListEl.appendChild(div);
+      });
+    }
+
+    function formatTime(t) {
+      const sec = Math.floor(t);
+      const dec = Math.floor((t - sec) * 10);
+      return `${sec.toString().padStart(2, '0')}.${dec}s`;
+    }
+
+    function applyAction(actionKey) {
+      robotEl.className = 'robot';
+      const classes = actionClasses[actionKey] || [];
+      classes.forEach((cls) => robotEl.classList.add(cls));
+    }
+
+    function updateEyes(t) {
+      const eyes = document.querySelectorAll('.eye');
+      const head = document.querySelector('.robot-head');
+      const headStyle = head ? getComputedStyle(head) : null;
+      const isLeft = headStyle && (headStyle.animationName === 'headScan' || headStyle.animationName === 'headScanWide') && (t % 4) < 2;
+      eyes.forEach((eye) => {
+        eye.classList.toggle('look-left', isLeft);
+        eye.classList.toggle('look-right', !isLeft);
+      });
+    }
+
+    function updateUI(t) {
+      const form = forms[currentFormIndex];
+      const progress = Math.min(t / 90, 1) * 100;
+      progressBar.style.width = `${progress}%`;
+      progressHandle.style.left = `${progress}%`;
+      timelinePlayhead.style.left = `${progress}%`;
+      progressText.textContent = `${Math.round(progress)}%`;
+      timerEl.textContent = formatTime(t);
+
+      const segment = form.segments.find((s) => t >= s.start && t < s.end) || form.segments[form.segments.length - 1];
+      currentNameEl.textContent = segment.name;
+      currentDescEl.textContent = segment.desc;
+      currentTimeEl.textContent = `${segment.start}-${segment.end}s`;
+      currentIntensityEl.textContent = `强度 ${actionIntensity[segment.action] || '-'}`;
+
+      form.segments.forEach((s, idx) => {
+        const el = document.getElementById(`seg-${idx}`);
+        if (!el) return;
+        const active = t >= s.start && t < s.end;
+        el.classList.toggle('active', active);
+        if (active) {
+          el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+      });
+
+      applyAction(segment.action);
+      updateEyes(t);
+    }
+
+    function seekTo(time) {
+      elapsed = Math.max(0, Math.min(90, time));
+      startTime = performance.now() - elapsed * 1000;
+      updateUI(elapsed % 90);
+      if (!isPlaying) {
+        playBtn.textContent = '播放';
+      }
+    }
+
+    function getScrubTimeFromEvent(e, element) {
+      const rect = element.getBoundingClientRect();
+      const x = (e.clientX || e.touches?.[0]?.clientX || 0) - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      return pct * 90;
+    }
+
+    function setupScrubbing(element) {
+      function start(e) {
+        isScrubbing = true;
+        document.body.classList.add('timeline-scrubbing');
+        const time = getScrubTimeFromEvent(e, element);
+        seekTo(time);
+        if (isPlaying) {
+          cancelAnimationFrame(rafId);
+        }
+      }
+      function move(e) {
+        if (!isScrubbing) return;
+        e.preventDefault();
+        const time = getScrubTimeFromEvent(e, element);
+        seekTo(time);
+      }
+      function end() {
+        if (!isScrubbing) return;
+        isScrubbing = false;
+        document.body.classList.remove('timeline-scrubbing');
+        if (isPlaying) {
+          startTime = performance.now() - elapsed * 1000;
+          rafId = requestAnimationFrame(loop);
+        }
+      }
+      element.addEventListener('mousedown', start);
+      element.addEventListener('touchstart', start, { passive: false });
+      window.addEventListener('mousemove', move);
+      window.addEventListener('touchmove', move, { passive: false });
+      window.addEventListener('mouseup', end);
+      window.addEventListener('touchend', end);
+    }
+
+    function loop(now) {
+      if (!isPlaying || isScrubbing) return;
+      elapsed = (now - startTime) / 1000;
+      const t = elapsed % 90;
+      updateUI(t);
+      rafId = requestAnimationFrame(loop);
+    }
+
+    function switchForm(idx) {
+      currentFormIndex = idx;
+      startTime = performance.now();
+      elapsed = 0;
+      buildTabs();
+      const form = forms[currentFormIndex];
+      formTitleEl.textContent = form.name;
+      formDescEl.textContent = form.desc;
+      buildTimelineRuler();
+      buildSegmentList();
+      updateUI(0);
+    }
+
+    playBtn.addEventListener('click', () => {
+      isPlaying = !isPlaying;
+      playBtn.textContent = isPlaying ? '暂停' : '播放';
+      if (isPlaying) {
+        startTime = performance.now() - elapsed * 1000;
+        rafId = requestAnimationFrame(loop);
+      } else {
+        cancelAnimationFrame(rafId);
+      }
+    });
+
+    resetBtn.addEventListener('click', () => {
+      seekTo(0);
+      if (!isPlaying) {
+        isPlaying = true;
+        playBtn.textContent = '暂停';
+        rafId = requestAnimationFrame(loop);
+      }
+    });
+
+    setupScrubbing(progressTrack);
+    setupScrubbing(timelineRuler);
+
+    // Blink eyes occasionally
+    setInterval(() => {
+      const eyes = document.querySelectorAll('.eye');
+      eyes.forEach((eye) => eye.classList.add('blink'));
+      setTimeout(() => eyes.forEach((eye) => eye.classList.remove('blink')), 150);
+    }, 4000 + Math.random() * 2000);
+
+    switchForm(0);
+    rafId = requestAnimationFrame(loop);
+  </script>
+</body>
+</html>
