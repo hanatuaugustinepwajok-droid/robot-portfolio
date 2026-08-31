@@ -8,25 +8,38 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
 <style>
-  :root{--paper:#f4efe6;--ink:#181410;--muted:#7a7166;--rule:#d8cfc0;--accent:#b63b1c;--white:#fbf8f2}
+  :root{--paper:#f4efe6;--ink:#181410;--muted:#7a7166;--rule:#d8cfc0;--accent:#b63b1c;--teal:#1e5752;--white:#fbf8f2}
   *{box-sizing:border-box}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;line-height:1.65}
-  .wrap{max-width:880px;margin:0 auto;padding:0 26px}
+  .wrap{max-width:900px;margin:0 auto;padding:0 26px}
   h1,h2,.serif{font-family:"Noto Serif SC",serif}
-  h1{font-size:clamp(34px,6vw,58px);line-height:1.06;margin:14px 0 10px;font-weight:700}
+  h1{font-size:clamp(34px,6vw,56px);line-height:1.06;margin:14px 0 12px;font-weight:700}
   .kicker{color:var(--accent);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
   .lead{font-size:18px;max-width:36em;margin:0}
   .muted{color:var(--muted)}
-  header{padding:44px 0 30px;border-bottom:1px solid var(--rule)}
+  header{padding:40px 0 0;border-bottom:1px solid var(--rule)}
   .mast-top{display:flex;justify-content:space-between;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
-  main{padding:34px 0 20px}
-  a.work{display:block;text-decoration:none;color:inherit;background:var(--white);border:1px solid var(--rule);padding:24px 26px;margin-bottom:16px;transition:border-color 200ms}
+
+  /* 三秒亮点带 */
+  .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 0}
+  .strip .cell{background:var(--white);padding:18px 20px}
+  .strip .lab{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+  .strip .val{font-family:"Noto Serif SC",serif;font-size:19px;font-weight:600;margin-top:6px;line-height:1.4}
+  .thesis-band{background:var(--ink);color:var(--paper);padding:22px 26px;margin:18px 0 34px}
+  .thesis-band .serif{font-size:clamp(19px,2.6vw,24px);line-height:1.5;margin:0}
+  .thesis-band .tiny{color:#a89e90;font-size:12.5px;margin-top:8px}
+
+  main{padding:8px 0 20px}
+  a.work{display:grid;grid-template-columns:1fr auto;gap:6px 20px;text-decoration:none;color:inherit;background:var(--white);border:1px solid var(--rule);padding:22px 26px;margin-bottom:14px;transition:border-color 200ms}
   a.work:hover{border-color:var(--ink)}
   a.work .no{font-size:11px;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;font-weight:600}
-  a.work h2{font-size:24px;margin:6px 0 8px}
-  a.work p{margin:0;font-size:15px;color:var(--muted)}
-  a.work .go{font-size:12.5px;color:var(--ink);margin-top:12px;display:inline-block;border-bottom:1px solid var(--ink)}
+  a.work h2{font-size:23px;margin:4px 0 6px}
+  a.work .desc{margin:0;font-size:14.5px;color:var(--muted)}
+  a.work .hl{grid-column:1/-1;margin-top:12px;padding-top:12px;border-top:1px dashed var(--rule);font-size:14px}
+  a.work .hl b{color:var(--accent)}
+  a.work .go{font-size:12.5px;color:var(--ink);align-self:start;border-bottom:1px solid var(--ink);white-space:nowrap}
   footer{padding:26px 0 60px;font-size:12.5px;color:var(--muted)}
+  @media(max-width:680px){.strip{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -34,36 +47,64 @@
   <div class="wrap">
     <div class="mast-top"><span>独立求职作品</span><span>2026</span></div>
     <p class="kicker">Portfolio · AI Companion Robot</p>
-    <h1>三件作品，一个判断</h1>
-    <p class="lead">陪伴机器人这门生意，拼的不是谁更可爱，是谁更懂「被记得」。下面三件，分别证明我会做设计、会做研究、会做商业判断。</p>
+    <h1>我研究机器人怎么「被记得」</h1>
+    <p class="lead">新闻学大四，应聘 AI 机器人产品实习。下面四件作品都能点开玩——但这一页不点，也能看懂我要说什么。</p>
+
+    <div class="strip">
+      <div class="cell"><div class="lab">我是谁</div><div class="val">新闻学大四，会用记者的方法做产品</div></div>
+      <div class="cell"><div class="lab">我要什么</div><div class="val">AI 机器人产品实习，一周四天起</div></div>
+      <div class="cell"><div class="lab">我带了什么</div><div class="val">四件能点开的作品，不是简历截图</div></div>
+    </div>
+
+    <div class="thesis-band">
+      <p class="serif">核心判断：陪伴机器人拼的不是谁更可爱，是谁更懂「被记得」。Moxie 公司一倒、孩子的朋友当场变砖——所以人设必须本地可运行。</p>
+      <p class="tiny">这个判断贯穿下面四件作品。它可以被挑战——它本来就是用来被挑战的。</p>
+    </div>
   </div>
 </header>
 <main>
   <div class="wrap">
+
     <a class="work" href="entry-point-map.html">
-      <span class="no">01 · 市场判断</span>
-      <h2>切入点地图</h2>
-      <p>一张能拖的战场。把 Loona、EMO、Vector、Moxie 拖一拖，空出来的位置就是该做的产品。</p>
+      <div>
+        <span class="no">01 · 市场判断</span>
+        <h2>切入点地图</h2>
+        <p class="desc">一张能拖的战场。把 Loona、EMO、Vector、Moxie 拖一拖，空出来的位置就是该做的产品。</p>
+      </div>
       <span class="go">打开 →</span>
+      <div class="hl"><b>不用点开：</b>六台产品站上两条轴，最挤的是「一个人的陪伴」，最贵的教训是「一屋子的陪伴」——我的切入点在左下：先有用、再长感情。</div>
     </a>
+
     <a class="work" href="bp-simulator.html">
-      <span class="no">02 · 商业判断</span>
-      <h2>一页 BP 推演器</h2>
-      <p>客单价、订阅、2B/2C 三块滑块。动一个数，商业计划书上的那句话当场死去或活过来。</p>
+      <div>
+        <span class="no">02 · 商业判断</span>
+        <h2>一页 BP 推演器</h2>
+        <p class="desc">客单价、订阅、2B/2C 三块滑块。动一个数，商业计划书上的那句话当场死去或活过来。</p>
+      </div>
       <span class="go">打开 →</span>
+      <div class="hl"><b>不用点开：</b>把客单价拖到 ¥499，「陪伴机器人」这一定位当场被划掉，改成「带眼睛的音箱」。BP 里每句话都有死因。</div>
     </a>
+
     <a class="work" href="obituary-hall.html">
-      <span class="no">03 · 用户体验研究</span>
-      <h2>讣告馆</h2>
-      <p>四台被爱过的机器人，如何在硬件完好的情况下死去。亲手关掉一台，看它分五级慢慢失能。</p>
+      <div>
+        <span class="no">03 · 用户体验研究</span>
+        <h2>讣告馆</h2>
+        <p class="desc">四台被爱过的机器人，如何在硬件完好的情况下死去。亲手关掉一台，看它分五级慢慢失能。</p>
+      </div>
       <span class="go">打开 →</span>
+      <div class="hl"><b>不用点开：</b>Jibo 是自己念出自己的死讯、然后跳了最后一支舞；日本光福寺为 AIBO 办葬礼，祭坛上供的是钳子。死因里逼出五条可验收的设计标准。</div>
     </a>
+
     <a class="work" href="presence-protocol.html">
-      <span class="no">04 · 情感交互设计</span>
-      <h2>在场协议</h2>
-      <p>把机器人当成连载角色来设计：表情系统、情绪反馈、回家场景、七日内容生态。</p>
+      <div>
+        <span class="no">04 · 情感交互设计</span>
+        <h2>在场协议</h2>
+        <p class="desc">把机器人当成连载角色来设计：表情系统、情绪反馈、回家场景、七日内容生态。</p>
+      </div>
       <span class="go">打开 →</span>
+      <div class="hl"><b>不用点开：</b>同一句「我在」，开心、害羞、困倦三个版本；用户回家被拆成一段 18 秒、能直接交给动画的分镜。</div>
     </a>
+
   </div>
 </main>
 <footer>
