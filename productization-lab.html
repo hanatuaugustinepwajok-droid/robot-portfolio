@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>能力模块拆解台 · 具身智能交付的产品化路径</title>
+<style>
+:root{
+  --bg:#0a0e14; --surface:#111721; --surface2:#18202d; --surface3:#1f2937;
+  --border:#26303f; --border2:#334155;
+  --text:#e6edf3; --text2:#8b98a9; --text3:#5a6572;
+  --cyan:#22d3ee; --blue:#3b82f6; --green:#10b981; --amber:#f59e0b; --red:#ef4444; --violet:#a78bfa;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,-apple-system,sans-serif;line-height:1.6;font-size:15px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+
+/* HERO */
+.hero{background:linear-gradient(180deg,#0d1420 0%,#0a0e14 100%);border-bottom:1px solid var(--border);padding:44px 0 36px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:700px;height:320px;background:radial-gradient(ellipse,rgba(34,211,238,.08),transparent 70%);pointer-events:none}
+.h-tag{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.07);padding:3px 11px;border-radius:99px;margin-bottom:14px}
+.h-title{font-size:clamp(25px,4.4vw,40px);font-weight:700;line-height:1.15;margin-bottom:10px}
+.h-sub{font-size:15px;color:var(--text2);max-width:620px;margin-bottom:22px}
+.h-thesis{border:1px solid var(--border);border-left:3px solid var(--cyan);background:rgba(24,32,45,.6);padding:14px 20px;border-radius:0 var(--r) var(--r) 0;max-width:720px;font-size:14px;color:var(--text2)}
+.h-thesis strong{color:var(--text)}
+.h-thesis .punch{color:var(--cyan);font-weight:600}
+
+/* SECTION */
+.sec{margin:34px 0}
+.sec-label{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.sec-note{font-size:13px;color:var(--text3);margin-bottom:14px;margin-top:-8px}
+
+/* CASE TABS */
+.case-tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:20px}
+@media(max-width:720px){.case-tabs{grid-template-columns:1fr 1fr}}
+.case-tab{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:13px 14px;cursor:pointer;transition:border-color .18s,background .18s;user-select:none}
+.case-tab:hover{border-color:var(--border2)}
+.case-tab.active{border-color:var(--cyan);background:rgba(34,211,238,.06)}
+.ct-icon{font-size:19px;margin-bottom:5px;display:block}
+.ct-name{font-size:13.5px;font-weight:600;margin-bottom:2px}
+.ct-meta{font-size:11.5px;color:var(--text3)}
+.case-tab.active .ct-meta{color:var(--cyan)}
+
+/* MAIN GRID */
+.main-grid{display:grid;grid-template-columns:1fr 320px;gap:18px;align-items:start}
+@media(max-width:880px){.main-grid{grid-template-columns:1fr}}
+
+/* MODULE LIST */
+.mod-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.mod-head{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mod-head-title{font-size:13.5px;font-weight:600}
+.mod-head-hint{font-size:11.5px;color:var(--text3)}
+.mod-row{padding:11px 17px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr auto;gap:8px 12px;align-items:center;transition:background .15s}
+.mod-row:last-child{border-bottom:none}
+.mod-row:hover{background:var(--surface2)}
+.mod-main{display:flex;align-items:center;gap:9px;min-width:0}
+.mod-reuse-badge{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mod-name{font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mod-stack{font-size:11px;color:var(--text3);border:1px solid var(--border2);padding:1px 7px;border-radius:99px;flex-shrink:0}
+.mod-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.mod-hours{font-size:11.5px;color:var(--text3);width:44px;text-align:right}
+.reuse-switch{display:flex;gap:2px;background:var(--surface3);border-radius:6px;padding:2px}
+.rs-btn{font-size:10.5px;padding:3px 8px;border:none;background:transparent;color:var(--text3);border-radius:4px;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+.rs-btn:hover{color:var(--text2)}
+.rs-btn.on-std{background:rgba(16,185,129,.18);color:var(--green)}
+.rs-btn.on-semi{background:rgba(245,158,11,.18);color:var(--amber)}
+.rs-btn.on-cus{background:rgba(239,68,68,.18);color:var(--red)}
+
+/* DASHBOARD */
+.dash{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:sticky;top:18px}
+.dash-title{font-size:13px;font-weight:600;margin-bottom:16px;padding-bottom:11px;border-bottom:1px solid var(--border)}
+.gauge-wrap{text-align:center;margin-bottom:18px}
+.gauge{position:relative;width:130px;height:130px;margin:0 auto 10px}
+.gauge svg{transform:rotate(-90deg)}
+.gauge-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.gauge-num{font-size:31px;font-weight:700;line-height:1}
+.gauge-lab{font-size:11px;color:var(--text3);margin-top:3px}
+.gauge-verdict{font-size:12.5px;padding:6px 12px;border-radius:99px;display:inline-block;font-weight:600}
+
+.split-bar{height:9px;border-radius:99px;overflow:hidden;display:flex;margin-bottom:11px;background:var(--surface3)}
+.split-seg{height:100%;transition:width .45s cubic-bezier(.4,0,.2,1)}
+.legend{display:flex;flex-direction:column;gap:7px}
+.leg-row{display:flex;align-items:center;gap:8px;font-size:12.5px}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.leg-name{color:var(--text2);flex:1}
+.leg-val{font-weight:600;font-variant-numeric:tabular-nums}
+
+.dash-metric{border-top:1px solid var(--border);margin-top:16px;padding-top:14px}
+.dm-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;margin-bottom:8px}
+.dm-row:last-child{margin-bottom:0}
+.dm-lab{color:var(--text3)}
+.dm-val{font-weight:600;font-variant-numeric:tabular-nums}
+
+/* HEATMAP */
+.heat-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow-x:auto}
+.heat-table{width:100%;border-collapse:collapse;min-width:660px}
+.heat-table th{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:12px 10px;text-align:center;border-bottom:1px solid var(--border);white-space:nowrap}
+.heat-table th:first-child{text-align:left;padding-left:17px;width:36%}
+.heat-table td{padding:9px 10px;text-align:center;border-bottom:1px solid var(--border);font-size:13px}
+.heat-table tr:last-child td{border-bottom:none}
+.heat-table td:first-child{text-align:left;padding-left:17px;font-size:13.5px}
+.heat-table tbody tr:hover{background:var(--surface2)}
+.heat-cell{width:26px;height:26px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.hc-yes{background:rgba(34,211,238,.18);color:var(--cyan);border:1px solid rgba(34,211,238,.35)}
+.hc-no{background:var(--surface3);color:var(--text3)}
+.count-badge{font-weight:700;font-variant-numeric:tabular-nums}
+.verdict-tag{font-size:11px;padding:2.5px 9px;border-radius:99px;font-weight:600;white-space:nowrap}
+.vt-sku{background:rgba(34,211,238,.15);color:var(--cyan)}
+.vt-bundle{background:rgba(167,139,250,.15);color:var(--violet)}
+.vt-service{background:rgba(245,158,11,.15);color:var(--amber)}
+.vt-keep{background:var(--surface3);color:var(--text3)}
+
+/* SKU CARDS */
+.sku-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.sku-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border-color .18s}
+.sku-card:hover{border-color:var(--border2)}
+.sku-head{padding:15px 17px 13px;border-bottom:1px solid var(--border)}
+.sku-tier{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:5px}
+.sku-name{font-size:15.5px;font-weight:700;margin-bottom:4px}
+.sku-desc{font-size:12.5px;color:var(--text3);line-height:1.55}
+.sku-body{padding:13px 17px 15px}
+.sku-mods{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:13px}
+.sku-mod{font-size:11px;background:var(--surface3);border:1px solid var(--border2);padding:2.5px 8px;border-radius:5px;color:var(--text2)}
+.sku-price{display:flex;justify-content:space-between;align-items:center;padding-top:11px;border-top:1px solid var(--border);font-size:12.5px}
+.sku-price-lab{color:var(--text3)}
+.sku-price-val{font-weight:600}
+.sku-why{font-size:12px;color:var(--text3);line-height:1.6;margin-top:11px;padding-top:11px;border-top:1px dashed var(--border)}
+.sku-why b{color:var(--text2)}
+
+/* FINDINGS */
+.find-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.find-grid{grid-template-columns:1fr}}
+.find-card{background:var(--surface);border:1px solid var(--border);border-left:3px solid;border-radius:0 var(--r) var(--r) 0;padding:16px 18px}
+.find-num{font-size:10.5px;letter-spacing:.12em;font-weight:700;text-transform:uppercase;margin-bottom:7px}
+.find-title{font-size:14.5px;font-weight:700;margin-bottom:7px;line-height:1.4}
+.find-text{font-size:13px;color:var(--text2);line-height:1.68}
+.find-text b{color:var(--text)}
+
+footer{border-top:1px solid var(--border);padding:22px 0;text-align:center;font-size:12.5px;color:var(--text3);margin-top:44px}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="wrap">
+    <div class="h-tag">Productization Lab · FDE 视角</div>
+    <div class="h-title">能力模块拆解台</div>
+    <div class="h-sub">四个具身智能交付案例，拆成 38 个能力模块，找出哪些能重复卖、哪些只能卖一次。</div>
+    <div class="h-thesis">
+      <strong>核心判断：</strong>项目公司和产品公司的差距不在技术栈有多深，在于交付完成之后有没有人回头做拆解。
+      每多做一个项目，如果不拆解，第二个项目还是从零开始。<span class="punch">最值钱的模块不是最难的那个，是在四个案例里都出现的那个。</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- CASES -->
+  <div class="sec">
+    <div class="sec-label">① 四个交付案例</div>
+    <div class="case-tabs" id="case-tabs"></div>
+
+    <div class="main-grid">
+      <div class="mod-panel">
+        <div class="mod-head">
+          <div class="mod-head-title" id="mod-head-title"></div>
+          <div class="mod-head-hint">复用度可改 · 右侧实时重算</div>
+        </div>
+        <div id="mod-rows"></div>
+      </div>
+
+      <div class="dash">
+        <div class="dash-title">产品化率</div>
+        <div class="gauge-wrap">
+          <div class="gauge">
+            <svg width="130" height="130">
+              <circle cx="65" cy="65" r="55" fill="none" stroke="#1f2937" stroke-width="11"/>
+              <circle id="gauge-arc" cx="65" cy="65" r="55" fill="none" stroke="#10b981" stroke-width="11"
+                stroke-linecap="round" stroke-dasharray="345.6" stroke-dashoffset="345.6"
+                style="transition:stroke-dashoffset .5s cubic-bezier(.4,0,.2,1),stroke .3s"/>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-num" id="gauge-num">0%</div>
+              <div class="gauge-lab">可重复销售</div>
+            </div>
+          </div>
+          <div class="gauge-verdict" id="gauge-verdict"></div>
+        </div>
+
+        <div class="split-bar">
+          <div class="split-seg" id="seg-std" style="background:#10b981;width:0%"></div>
+          <div class="split-seg" id="seg-semi" style="background:#f59e0b;width:0%"></div>
+          <div class="split-seg" id="seg-cus" style="background:#ef4444;width:0%"></div>
+        </div>
+        <div class="legend">
+          <div class="leg-row"><div class="leg-dot" style="background:#10b981"></div><div class="leg-name">完全标准 · 可直接复用</div><div class="leg-val" id="lv-std" style="color:#10b981">0</div></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#f59e0b"></div><div class="leg-name">半标准 · 配置即可</div><div class="leg-val" id="lv-semi" style="color:#f59e0b">0</div></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#ef4444"></div><div class="leg-name">一次性定制 · 不可复用</div><div class="leg-val" id="lv-cus" style="color:#ef4444">0</div></div>
+        </div>
+
+        <div class="dash-metric">
+          <div class="dm-row"><span class="dm-lab">总交付工时</span><span class="dm-val" id="dm-hours">—</span></div>
+          <div class="dm-row"><span class="dm-lab">定制工时占比</span><span class="dm-val" id="dm-cushours" style="color:#ef4444">—</span></div>
+          <div class="dm-row"><span class="dm-lab">下一单可省</span><span class="dm-val" id="dm-save" style="color:#22d3ee">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HEATMAP -->
+  <div class="sec">
+    <div class="sec-label">② 跨案例复用分析</div>
+    <div class="sec-note">同一个模块在几个案例里出现过？出现次数越多，产品化价值越高——这是整张表唯一重要的那一列。</div>
+    <div class="heat-wrap">
+      <table class="heat-table">
+        <thead>
+          <tr>
+            <th>能力模块</th>
+            <th>工厂巡检</th>
+            <th>园区安防</th>
+            <th>仓储分拣</th>
+            <th>变电站</th>
+            <th>命中</th>
+            <th>处置建议</th>
+          </tr>
+        </thead>
+        <tbody id="heat-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- SKU -->
+  <div class="sec">
+    <div class="sec-label">③ SKU 打包与定价建议</div>
+    <div class="sec-note">把高复用模块打成可重复销售的产品；定制部分单独定价，不混进产品线。</div>
+    <div class="sku-grid" id="sku-grid"></div>
+  </div>
+
+  <!-- FINDINGS -->
+  <div class="sec">
+    <div class="sec-label">④ 四条判断</div>
+    <div class="find-grid">
+      <div class="find-card" style="border-left-color:var(--cyan)">
+        <div class="find-num" style="color:var(--cyan)">Finding 01</div>
+        <div class="find-title">系统对接是最大的产品化漏洞</div>
+        <div class="find-text">四个案例里的系统对接（MES / 安防平台 / WMS / 电网调度）全部被记为一次性定制，合计吃掉 <b>22% 的交付工时</b>，却一分钱复用价值都没有。<br><br><b>解法：</b>不要继续一单一写，做一层连接器框架——把对接从「开发」降级成「配置」。这一件事能把定制工时占比从 30% 压到 15% 以下。</div>
+      </div>
+      <div class="find-card" style="border-left-color:var(--green)">
+        <div class="find-num" style="color:var(--green)">Finding 02</div>
+        <div class="find-title">最值钱的模块最不起眼</div>
+        <div class="find-text">算力调度和报表引擎在技术上都不是难点，但它们在 <b>4/4 和 3/4 的案例里都出现了</b>。而技术含量最高的局部放电检测、物料分类模型，只出现过一次。<br><br><b>结论：</b>产品化的挑选标准是复用频次，不是技术难度。团队最容易犯的错，是把最难的那块当成核心产品。</div>
+      </div>
+      <div class="find-card" style="border-left-color:var(--amber)">
+        <div class="find-num" style="color:var(--amber)">Finding 03</div>
+        <div class="find-title">现场部署不该被算进产品</div>
+        <div class="find-text">现场部署与调试出现在 4/4 案例中，看起来复用度极高——但它是<b>服务，不是产品</b>。它无法通过一次开发在下一单省下成本，只能通过方法论压缩人天。<br><br><b>解法：</b>拆成独立的实施服务 SKU，按人天计价。混进产品报价里，会让毛利结构永远看不清。</div>
+      </div>
+      <div class="find-card" style="border-left-color:var(--violet)">
+        <div class="find-num" style="color:var(--violet)">Finding 04</div>
+        <div class="find-title">六层技术栈里，只有三层能直接卖</div>
+        <div class="find-text">算力调度、模型运维、模型微调这三层是<b>标准化程度最高、跨行业无差别</b>的，可以做成独立 SaaS 卖给不买机器人的客户。视觉算法和具身智能高度绑定行业场景，只能随项目走。<br><br><b>意味着：</b>公司其实有两条产品线，节奏不同，不该用同一套打法推。</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>能力模块拆解台 · 具身智能交付的产品化路径分析 · 作者：新闻学大四在读</footer>
+
+<script>
+const CASES = [
+  { icon:'🏭', name:'工厂设备巡检', meta:'制造业 · 轮式机器人',
+    mods:[
+      {n:'底盘导航与避障',s:'具身智能',h:80,r:'std'},
+      {n:'巡检路径规划',s:'具身智能',h:60,r:'semi'},
+      {n:'仪表读数识别',s:'视觉算法',h:120,r:'semi'},
+      {n:'设备异常检测模型',s:'模型训练',h:160,r:'cus'},
+      {n:'红外测温分析',s:'视觉算法',h:70,r:'std'},
+      {n:'MES 系统对接',s:'应用开发',h:140,r:'cus'},
+      {n:'巡检报表生成',s:'应用开发',h:50,r:'std'},
+      {n:'告警推送与工单',s:'应用开发',h:60,r:'semi'},
+      {n:'算力资源调度',s:'算力调度',h:40,r:'std'},
+      {n:'现场部署与调试',s:'交付服务',h:120,r:'cus'}
+    ]},
+  { icon:'🛡️', name:'园区安防巡逻', meta:'政企园区 · 巡逻机器人',
+    mods:[
+      {n:'底盘导航与避障',s:'具身智能',h:80,r:'std'},
+      {n:'人员入侵检测',s:'视觉算法',h:90,r:'std'},
+      {n:'人脸识别与黑名单',s:'视觉算法',h:100,r:'semi'},
+      {n:'周界越界报警',s:'视觉算法',h:60,r:'std'},
+      {n:'夜间低照度增强',s:'视觉算法',h:70,r:'std'},
+      {n:'多机协同调度',s:'具身智能',h:110,r:'semi'},
+      {n:'安防平台对接',s:'应用开发',h:130,r:'cus'},
+      {n:'巡检报表生成',s:'应用开发',h:50,r:'std'},
+      {n:'算力资源调度',s:'算力调度',h:40,r:'std'},
+      {n:'现场部署与调试',s:'交付服务',h:100,r:'cus'}
+    ]},
+  { icon:'📦', name:'仓储分拣', meta:'物流仓储 · 机械臂',
+    mods:[
+      {n:'视觉抓取定位',s:'视觉算法',h:130,r:'std'},
+      {n:'抓取轨迹规划',s:'具身智能',h:110,r:'std'},
+      {n:'物料分类模型',s:'模型训练',h:180,r:'cus'},
+      {n:'异形件识别',s:'视觉算法',h:90,r:'semi'},
+      {n:'模型微调平台',s:'模型训练',h:70,r:'std'},
+      {n:'WMS 系统对接',s:'应用开发',h:120,r:'cus'},
+      {n:'分拣效率报表',s:'应用开发',h:50,r:'std'},
+      {n:'算力资源调度',s:'算力调度',h:40,r:'std'},
+      {n:'现场部署与调试',s:'交付服务',h:110,r:'cus'}
+    ]},
+  { icon:'⚡', name:'变电站巡检', meta:'电力 · 防爆巡检机器人',
+    mods:[
+      {n:'底盘导航与避障',s:'具身智能',h:80,r:'std'},
+      {n:'表计识别',s:'视觉算法',h:110,r:'semi'},
+      {n:'红外测温分析',s:'视觉算法',h:70,r:'std'},
+      {n:'局部放电检测',s:'模型训练',h:190,r:'cus'},
+      {n:'防爆认证适配',s:'硬件适配',h:150,r:'cus'},
+      {n:'电网调度对接',s:'应用开发',h:140,r:'cus'},
+      {n:'巡检报表生成',s:'应用开发',h:50,r:'std'},
+      {n:'算力资源调度',s:'算力调度',h:40,r:'std'},
+      {n:'现场部署与调试',s:'交付服务',h:130,r:'cus'}
+    ]}
+];
+
+const R_COLOR = { std:'#10b981', semi:'#f59e0b', cus:'#ef4444' };
+const R_LABEL = { std:'标准', semi:'半标', cus:'定制' };
+let active = 0;
+
+function buildTabs(){
+  document.getElementById('case-tabs').innerHTML = CASES.map((c,i)=>`
+    <div class="case-tab ${i===0?'active':''}" onclick="pickCase(${i})" id="tab-${i}">
+      <span class="ct-icon">${c.icon}</span>
+      <div class="ct-name">${c.name}</div>
+      <div class="ct-meta">${c.mods.length} 个模块 · ${c.meta}</div>
+    </div>`).join('');
+}
+
+function pickCase(i){
+  active = i;
+  document.querySelectorAll('.case-tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  renderMods();
+  recalc();
+}
+
+function renderMods(){
+  const c = CASES[active];
+  document.getElementById('mod-head-title').textContent = `${c.name} · 能力模块拆解`;
+  document.getElementById('mod-rows').innerHTML = c.mods.map((m,i)=>`
+    <div class="mod-row">
+      <div class="mod-main">
+        <div class="mod-reuse-badge" id="badge-${i}" style="background:${R_COLOR[m.r]}"></div>
+        <span class="mod-name">${m.n}</span>
+        <span class="mod-stack">${m.s}</span>
+      </div>
+      <div class="mod-right">
+        <span class="mod-hours">${m.h}h</span>
+        <div class="reuse-switch">
+          ${['std','semi','cus'].map(k=>`
+            <button class="rs-btn ${m.r===k?'on-'+k:''}" id="rs-${i}-${k}" onclick="setReuse(${i},'${k}')">${R_LABEL[k]}</button>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function setReuse(mi, val){
+  CASES[active].mods[mi].r = val;
+  document.getElementById(`badge-${mi}`).style.background = R_COLOR[val];
+  ['std','semi','cus'].forEach(k=>{
+    const b = document.getElementById(`rs-${mi}-${k}`);
+    b.className = 'rs-btn' + (k===val ? ' on-'+k : '');
+  });
+  recalc();
+  renderHeat();
+}
+
+function recalc(){
+  const mods = CASES[active].mods;
+  const n = mods.length;
+  const cnt = { std:0, semi:0, cus:0 };
+  const hrs = { std:0, semi:0, cus:0 };
+  mods.forEach(m=>{ cnt[m.r]++; hrs[m.r]+=m.h; });
+  const totalH = hrs.std + hrs.semi + hrs.cus;
+
+  // productization rate: std full weight, semi half weight
+  const rate = Math.round(((cnt.std + cnt.semi*0.5) / n) * 100);
+
+  document.getElementById('gauge-num').textContent = rate + '%';
+  const arc = document.getElementById('gauge-arc');
+  const C = 2 * Math.PI * 55;
+  arc.style.strokeDashoffset = C * (1 - rate/100);
+  const col = rate >= 65 ? '#10b981' : rate >= 45 ? '#f59e0b' : '#ef4444';
+  arc.style.stroke = col;
+  document.getElementById('gauge-num').style.color = col;
+
+  const v = document.getElementById('gauge-verdict');
+  if(rate >= 65){ v.textContent='可产品化'; v.style.background='rgba(16,185,129,.15)'; v.style.color='#10b981'; }
+  else if(rate >= 45){ v.textContent='半产品半项目'; v.style.background='rgba(245,158,11,.15)'; v.style.color='#f59e0b'; }
+  else { v.textContent='纯项目制 · 不可规模化'; v.style.background='rgba(239,68,68,.15)'; v.style.color='#ef4444'; }
+
+  document.getElementById('seg-std').style.width = (cnt.std/n*100)+'%';
+  document.getElementById('seg-semi').style.width = (cnt.semi/n*100)+'%';
+  document.getElementById('seg-cus').style.width = (cnt.cus/n*100)+'%';
+  document.getElementById('lv-std').textContent = cnt.std + ' 个';
+  document.getElementById('lv-semi').textContent = cnt.semi + ' 个';
+  document.getElementById('lv-cus').textContent = cnt.cus + ' 个';
+
+  document.getElementById('dm-hours').textContent = totalH + ' 人时';
+  document.getElementById('dm-cushours').textContent = Math.round(hrs.cus/totalH*100) + '%';
+  const save = hrs.std + Math.round(hrs.semi*0.6);
+  document.getElementById('dm-save').textContent = save + ' 人时 (' + Math.round(save/totalH*100) + '%)';
+}
+
+// ── HEATMAP ──
+function renderHeat(){
+  const map = {};
+  CASES.forEach((c,ci)=>{
+    c.mods.forEach(m=>{
+      if(!map[m.n]) map[m.n] = { hits:[false,false,false,false], stack:m.s, reuse:m.r };
+      map[m.n].hits[ci] = true;
+      if(m.r === 'std') map[m.n].reuse = 'std';
+    });
+  });
+
+  const rows = Object.entries(map)
+    .map(([name,d])=>({ name, ...d, count: d.hits.filter(Boolean).length }))
+    .sort((a,b)=> b.count - a.count || a.name.localeCompare(b.name));
+
+  document.getElementById('heat-body').innerHTML = rows.map(r=>{
+    let tag, cls;
+    if(r.stack === '交付服务'){ tag='拆为实施服务'; cls='vt-service'; }
+    else if(r.count >= 3 && r.reuse === 'std'){ tag='独立 SKU'; cls='vt-sku'; }
+    else if(r.count >= 2){ tag='打包进套件'; cls='vt-bundle'; }
+    else { tag='留在项目侧'; cls='vt-keep'; }
+
+    const cntColor = r.count>=3 ? 'var(--cyan)' : r.count===2 ? 'var(--violet)' : 'var(--text3)';
+    return `<tr>
+      <td>${r.name} <span class="mod-stack" style="margin-left:5px">${r.stack}</span></td>
+      ${r.hits.map(h=>`<td><span class="heat-cell ${h?'hc-yes':'hc-no'}">${h?'●':'·'}</span></td>`).join('')}
+      <td><span class="count-badge" style="color:${cntColor}">${r.count}/4</span></td>
+      <td><span class="verdict-tag ${cls}">${tag}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SKU ──
+const SKUS = [
+  { tier:'Tier 1 · 平台层', tcolor:'#22d3ee', name:'具身巡检基座包',
+    desc:'所有轮式巡检机器人项目的公共底座，四个案例里三个直接复用。',
+    mods:['底盘导航与避障','巡检路径规划','算力资源调度','巡检报表生成'],
+    price:'License 买断 + 15% 年维护', why:'<b>为什么这样卖：</b>一次开发无限复用，边际成本趋近于零。买断制让客户有资产感，年维护保证现金流不断。' },
+  { tier:'Tier 2 · 能力层', tcolor:'#10b981', name:'工业视觉识别套件',
+    desc:'表计读数、红外测温、越界检测等通用工业视觉能力的集合。',
+    mods:['仪表/表计识别','红外测温分析','周界越界报警','夜间低照度增强'],
+    price:'按点位订阅 · ¥800/点位/年', why:'<b>为什么这样卖：</b>按点位计价随客户规模自然增长，客户扩产就自动加钱，不用重新谈合同。' },
+  { tier:'Tier 3 · 平台层', tcolor:'#a78bfa', name:'模型微调与运维平台',
+    desc:'跨行业无差别的模型训练、纳管、部署能力，可脱离机器人单独售卖。',
+    mods:['模型微调平台','模型运维纳管','算力资源调度'],
+    price:'SaaS 订阅 · 按算力档位分级', why:'<b>为什么这样卖：</b>这是唯一能卖给「不买机器人的客户」的产品线，把 TAM 从具身智能扩到全部有 AI 需求的政企客户。' },
+  { tier:'Tier 4 · 补漏层', tcolor:'#f59e0b', name:'行业连接器框架',
+    desc:'MES / WMS / 安防平台 / 电网调度的标准化适配层——目前最大的定制黑洞。',
+    mods:['MES 连接器','WMS 连接器','安防平台连接器','电网调度连接器'],
+    price:'按连接器数量授权', why:'<b>为什么必须做：</b>四个案例的系统对接吃掉 22% 工时且零复用。做成框架后，新客户对接从 130 人时降到 30 人时以内。' },
+  { tier:'非产品 · 服务线', tcolor:'#8b98a9', name:'现场实施服务',
+    desc:'部署、调试、验收、培训。出现在 4/4 案例中，但它是服务不是产品。',
+    mods:['现场部署与调试','客户培训','验收支持'],
+    price:'人天计价 · 标准化 SOP 压缩工时', why:'<b>为什么单独拆：</b>混进产品报价会永久污染毛利结构。单独定价后，才能看清产品线到底赚不赚钱。' }
+];
+
+function renderSKU(){
+  document.getElementById('sku-grid').innerHTML = SKUS.map(s=>`
+    <div class="sku-card">
+      <div class="sku-head">
+        <div class="sku-tier" style="color:${s.tcolor}">${s.tier}</div>
+        <div class="sku-name">${s.name}</div>
+        <div class="sku-desc">${s.desc}</div>
+      </div>
+      <div class="sku-body">
+        <div class="sku-mods">${s.mods.map(m=>`<span class="sku-mod">${m}</span>`).join('')}</div>
+        <div class="sku-price"><span class="sku-price-lab">定价模式</span><span class="sku-price-val" style="color:${s.tcolor}">${s.price}</span></div>
+        <div class="sku-why">${s.why}</div>
+      </div>
+    </div>`).join('');
+}
+
+buildTabs();
+renderMods();
+recalc();
+renderHeat();
+renderSKU();
+</script>
+</body>
+</html>

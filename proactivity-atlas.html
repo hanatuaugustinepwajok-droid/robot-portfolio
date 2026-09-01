@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>一个大脑，90 个国家 · 家庭机器人主动性的文化阈值</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600&family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --paper:#f4efe6;--ink:#181410;--muted:#7a7166;--rule:#d8cfc0;
+    --accent:#b63b1c;--teal:#1e5752;--white:#fbf8f2;
+    --ok:#1e5752;--warn:#b8863b;--bad:#b63b1c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;line-height:1.65}
+  .wrap{max-width:960px;margin:0 auto;padding:0 26px}
+  h1,h2,h3,.serif{font-family:"Noto Serif SC",serif}
+  h1{font-size:clamp(30px,5.2vw,48px);line-height:1.1;margin:14px 0 14px;font-weight:700}
+  h2{font-size:clamp(21px,3vw,27px);margin:0 0 6px;font-weight:600}
+  h3{font-size:17px;margin:0 0 6px;font-weight:600}
+  .kicker{color:var(--accent);font-size:11px;letter-spacing:.2em;text-transform:uppercase;font-weight:600}
+  .lead{font-size:17.5px;max-width:40em;margin:0}
+  .muted{color:var(--muted)}
+  .small{font-size:13.5px}
+  a{color:var(--accent)}
+
+  header{padding:36px 0 0;border-bottom:1px solid var(--rule)}
+  .mast-top{display:flex;justify-content:space-between;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+  .back{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--rule)}
+  .back:hover{color:var(--ink)}
+
+  .thesis-band{background:var(--ink);color:var(--paper);padding:22px 26px;margin:22px 0 30px}
+  .thesis-band .serif{font-size:clamp(18px,2.5vw,23px);line-height:1.55;margin:0}
+  .thesis-band .tiny{color:#a89e90;font-size:12.5px;margin:10px 0 0}
+
+  section{padding:38px 0;border-bottom:1px solid var(--rule)}
+  .sec-no{font-size:11px;letter-spacing:.14em;color:var(--accent);
+    text-transform:uppercase;font-weight:600;margin-bottom:8px}
+  .sec-intro{max-width:42em;margin:10px 0 0;color:var(--muted);font-size:15px}
+
+  /* ---------- 滑块台 ---------- */
+  .dial{background:var(--white);border:1px solid var(--rule);padding:26px;margin-top:24px}
+  .dial-head{display:flex;justify-content:space-between;align-items:baseline;
+    flex-wrap:wrap;gap:10px;margin-bottom:6px}
+  .dial-val{font-family:"Noto Serif SC",serif;font-size:34px;font-weight:700;line-height:1}
+  .dial-val span{font-size:14px;font-weight:400;color:var(--muted);margin-left:6px}
+  .score{font-size:13.5px;color:var(--muted);text-align:right}
+  .score b{font-family:"Noto Serif SC",serif;font-size:22px;color:var(--ink);font-weight:700}
+
+  input[type=range]{width:100%;margin:16px 0 4px;accent-color:var(--accent);height:26px;cursor:pointer}
+  .scale{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:22px}
+
+  /* 名称列 96 + 间隙 14 = 轨道左缘 110；状态列 82 + 间隙 14 = 轨道右缘 96。
+     playhead 层用同样的常量对齐，避免任何像素测量带来的漂移。 */
+  .bands{position:relative}
+  .band-row{display:grid;grid-template-columns:96px 1fr 82px;gap:14px;
+    align-items:center;padding:11px 0;border-top:1px solid var(--rule)}
+  .band-row:first-child{border-top:none}
+  .band-name{font-family:"Noto Serif SC",serif;font-weight:600;font-size:15px}
+  .band-name em{display:block;font-style:normal;font-size:11.5px;color:var(--muted);font-weight:400}
+  .band-track{position:relative;height:26px;background:#eae3d6;
+    border:1px solid var(--rule);overflow:hidden}
+  .band-fill{position:absolute;top:0;bottom:0;background:#cfe0d8;
+    border-left:1px solid var(--teal);border-right:1px solid var(--teal)}
+  .band-label{position:absolute;top:50%;transform:translateY(-50%);
+    font-size:11px;color:var(--teal);padding-left:6px;white-space:nowrap}
+  .band-status{font-size:12.5px;font-weight:600;text-align:right}
+  .st-ok{color:var(--ok)} .st-low{color:var(--warn)} .st-high{color:var(--bad)}
+
+  .playhead-layer{position:absolute;top:0;bottom:0;left:110px;right:96px;
+    pointer-events:none;z-index:3}
+  .playhead{position:absolute;top:0;bottom:0;width:2px;margin-left:-1px;
+    background:var(--ink)}
+  .playhead::after{content:"";position:absolute;top:-5px;left:-4px;
+    border-left:5px solid transparent;border-right:5px solid transparent;
+    border-top:7px solid var(--ink)}
+
+  @media(max-width:560px){
+    .band-row{grid-template-columns:64px 1fr 60px;gap:10px}
+    .playhead-layer{left:74px;right:70px}
+    .band-name{font-size:13.5px}
+    .band-label{display:none}
+  }
+
+  .verdict{margin-top:20px;padding:15px 18px;background:var(--paper);
+    border-left:3px solid var(--accent);font-size:14.5px}
+  .verdict b{color:var(--accent)}
+
+  /* ---------- 情境台 ---------- */
+  .tabs{display:flex;flex-wrap:wrap;gap:8px;margin:24px 0 20px}
+  .tab{padding:8px 15px;border:1px solid var(--rule);background:var(--white);
+    color:var(--muted);cursor:pointer;font-size:13.5px;font-family:inherit;
+    transition:all 160ms}
+  .tab:hover{border-color:var(--ink);color:var(--ink)}
+  .tab[aria-selected="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+
+  .scenario-title{font-family:"Noto Serif SC",serif;font-size:19px;font-weight:600;margin:0 0 4px}
+  .scenario-sub{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:44em}
+
+  .grid4{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:720px){.grid4{grid-template-columns:1fr}}
+  .cell{background:var(--white);border:1px solid var(--rule);padding:18px 20px}
+  .cell-top{display:flex;justify-content:space-between;align-items:baseline;
+    gap:10px;margin-bottom:10px;padding-bottom:9px;border-bottom:1px dashed var(--rule)}
+  .cell-country{font-family:"Noto Serif SC",serif;font-weight:600;font-size:16px}
+  .cell-dial{font-size:11.5px;color:var(--muted);white-space:nowrap}
+  .cell-act{font-size:13px;color:var(--accent);font-weight:600;
+    letter-spacing:.02em;margin-bottom:8px}
+  .quote{font-family:"Noto Serif SC",serif;font-size:15.5px;line-height:1.6;
+    margin:0 0 11px;padding-left:12px;border-left:2px solid var(--rule)}
+  .quote.silent{color:var(--muted);font-style:italic}
+  .why{font-size:13.5px;color:var(--muted);margin:0}
+
+  /* ---------- 红线 ---------- */
+  .lines{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;
+    background:var(--rule);border:1px solid var(--rule);margin-top:24px}
+  @media(max-width:720px){.lines{grid-template-columns:1fr}}
+  .line{background:var(--white);padding:20px 22px}
+  .line .c{font-family:"Noto Serif SC",serif;font-weight:600;font-size:15px;margin-bottom:7px}
+  .line .t{font-size:14.5px;margin:0 0 7px}
+  .line .n{font-size:13px;color:var(--muted);margin:0}
+
+  /* ---------- 压轴 ---------- */
+  .flip{background:var(--white);border:1px solid var(--rule);
+    border-top:3px solid var(--accent);padding:26px;margin-top:22px}
+  .flip-q{font-family:"Noto Serif SC",serif;font-size:19px;font-weight:600;margin:0 0 6px}
+  .flip-sub{color:var(--muted);font-size:14px;margin:0 0 20px;max-width:44em}
+  .switches{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  @media(max-width:720px){.switches{grid-template-columns:repeat(2,1fr)}}
+  .sw{border:1px solid var(--rule);padding:15px 16px;text-align:center;background:var(--paper)}
+  .sw .c{font-family:"Noto Serif SC",serif;font-weight:600;font-size:14.5px;margin-bottom:10px}
+  .sw .v{font-family:"Noto Serif SC",serif;font-size:20px;font-weight:700;
+    padding:7px 0;margin-bottom:9px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+  .sw .v.on{color:var(--bad)} .sw .v.off{color:var(--teal)}
+  .sw .n{font-size:12.5px;color:var(--muted);line-height:1.5;text-align:left}
+
+  footer{padding:30px 0 64px;font-size:13px;color:var(--muted)}
+  footer p{margin:0 0 8px;max-width:48em}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="mast-top">
+      <a class="back" href="index.html">← 返回作品集</a>
+      <span>独立求职作品 · 2026</span>
+    </div>
+    <p class="kicker">Proactivity Atlas · 主动性图集</p>
+    <h1>一个大脑，90 个国家</h1>
+    <p class="lead">
+      卧安以「一脑多形」为核心理念：一个自研大脑 OneModel，驱动多种形态的家庭机器人，
+      产品进入 90 多个国家。这份作品讨论它在软件侧的孪生难题——
+      一个大脑，能不能配一套全球统一的主动性？
+    </p>
+
+    <div class="thesis-band">
+      <p class="serif">
+        AI 产品的本地化不是把提示语翻译成四种语言。
+        同一句主动提醒，在东京是冒犯，在洛杉矶是冷漠。
+        真正要重新校准的是主动性阈值、默认开关和道歉长度——
+        这三样都长在模型的输出层，不在文案表里。
+      </p>
+      <p class="tiny">下面的滑块可以让你亲手验证：这个阈值调不成全球统一。</p>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ============ 01 滑块台 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-no">01 · 核心矛盾</div>
+    <h2>把主动性调成全球统一，会发生什么</h2>
+    <p class="sec-intro">
+      主动性是一个连续量：从「只在被叫到时响应」到「会主动评论、建议、发起对话」。
+      每个市场都有自己的可接受区间。拖动下面这一个全局滑块，
+      看看能不能找到一个同时让四个市场满意的位置。
+    </p>
+
+    <div class="dial">
+      <div class="dial-head">
+        <div>
+          <div class="dial-val"><span id="dv-num">65</span><span>／100 主动性</span></div>
+          <div class="small muted" id="dv-desc">中高：会主动关心，会就观察到的情况发问</div>
+        </div>
+        <div class="score">当前设置满足<br><b id="dv-score">2</b> / 4 个市场</div>
+      </div>
+
+      <input type="range" id="dial" min="0" max="100" value="65" step="1"
+             aria-label="全局主动性设置" />
+      <div class="scale">
+        <span>0 · 纯执行，绝不主动开口</span>
+        <span>100 · 高度主动，会评论和发起对话</span>
+      </div>
+
+      <div class="bands" id="bands"></div>
+
+      <div class="verdict" id="verdict"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 情境台 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-no">02 · 情境对照</div>
+    <h2>同一个情境，四种正确答案</h2>
+    <p class="sec-intro">
+      这些不是「风格偏好」，是对错问题。选错了，在那个市场就是差评和退货。
+      切换下面的情境标签，看同一台机器人在四个市场里应该怎么做。
+    </p>
+
+    <div class="tabs" id="tabs" role="tablist"></div>
+
+    <p class="scenario-title" id="sc-title"></p>
+    <p class="scenario-sub" id="sc-sub"></p>
+    <div class="grid4" id="sc-grid"></div>
+  </div>
+</section>
+
+<!-- ============ 03 红线 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-no">03 · 红线</div>
+    <h2>每个市场只有一条线，碰了就是退货</h2>
+    <p class="sec-intro">
+      主动性可以调，红线不能。这四条不是从文化理论推出来的，
+      是从各市场用户投诉里反复出现的同一类抱怨归纳出来的。
+    </p>
+
+    <div class="lines">
+      <div class="line">
+        <div class="c">日本</div>
+        <p class="t">不要评论家里的状态和主人的身体。</p>
+        <p class="n">「看见但不说」在日本是最高级的礼貌。机器人指出房间乱、指出你胖了、指出你熬夜，都不是关心，是让主人失去体面。日本用户对「被机器看见」的羞耻感在四国里最强。</p>
+      </div>
+      <div class="line">
+        <div class="c">德国</div>
+        <p class="t">任何数据离开本机之前，必须明示并单独同意。</p>
+        <p class="n">德国用户对主动性的第一反应不是「你管我」，是「你哪来的数据」。默认值必须是关闭，而且要能指出数据存在哪。GDPR 只是底线，用户的心理门槛比法条更高。</p>
+      </div>
+      <div class="line">
+        <div class="c">美国</div>
+        <p class="t">不要替用户做了决定却不告诉他。</p>
+        <p class="n">美国用户能接受机器人很主动，前提是控制权可见——他要随时知道机器人干了什么、并且能一键撤销。悄悄优化、悄悄调整，哪怕结果更好，也会被读成失控。</p>
+      </div>
+      <div class="line">
+        <div class="c">中国</div>
+        <p class="t">不要在第三人面前让主人失面子。</p>
+        <p class="n">同一句「客厅需要整理」，家里没人时说是贴心，有客人在场时说是事故。中国家庭是多代同堂加频繁访客的结构，机器人的发言对象从来不只是它面前那一个人。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 压轴 ============ -->
+<section>
+  <div class="wrap">
+    <div class="sec-no">04 · 最难的一条</div>
+    <h2>同一个开关，四个市场的默认值必须相反</h2>
+    <p class="sec-intro">
+      前面三节还只是「同一件事做到什么程度」。真正难的是这一类：
+      功能完全相同，但默认值在四个市场必须反向设置——而默认值决定了 90% 用户的实际体验。
+    </p>
+
+    <div class="flip">
+      <p class="flip-q">孩子对机器人说：「这个别告诉妈妈。」</p>
+      <p class="flip-sub">
+        机器人要不要把这件事同步给家长？这是一个布尔开关，
+        产品经理必须给它一个出厂默认值。四个市场的答案不一样。
+      </p>
+      <div class="switches">
+        <div class="sw">
+          <div class="c">日本</div>
+          <div class="v off">默认不上报</div>
+          <p class="n">AIBO 之后，日本家庭把机器人接受为「孩子的伙伴」而非家长的延伸。上报会摧毁这个身份，孩子从此不在它面前说话。</p>
+        </div>
+        <div class="sw">
+          <div class="c">德国</div>
+          <div class="v off">默认不上报</div>
+          <p class="n">儿童数据受最严保护。机器人成为家长监控工具，在德国不是产品选择，是合规风险。要开也得孩子那侧知情。</p>
+        </div>
+        <div class="sw">
+          <div class="c">美国</div>
+          <div class="v on">默认上报 + 告知孩子</div>
+          <p class="n">家长知情权是主流预期，但必须当场对孩子明说「这件事我会让你父母知道」。偷偷上报比不上报更糟。</p>
+        </div>
+        <div class="sw">
+          <div class="c">中国</div>
+          <div class="v on">默认上报</div>
+          <p class="n">家长普遍把「能管孩子」当成购买理由，教育属性是卖点。但要给孩子留一个能被尊重的解释，而不是直接打小报告。</p>
+        </div>
+      </div>
+      <div class="verdict" style="margin-top:22px">
+        <b>这一条为什么最难：</b>
+        主动性阈值调错了，用户觉得这机器人有点烦或者有点笨，还有救。
+        默认值设反了，日本家庭发现机器人打小报告、德国家长发现儿童数据被上传——
+        这不是体验问题，是当天上社交媒体、当周被退货的问题。
+        所以本地化不能放在上线后的运营环节，它是需求阶段就要拆出来的一列。
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>方法说明：</b>本作品为独立分析，基于公开资料：卧安机器人官网与招股书公开信息、各国消费电子媒体评测、GDPR 与各地儿童数据法规文本，以及日本、德国、美国用户社区中关于智能家居设备的公开讨论。四个市场的可接受区间为我根据上述二手材料做的判断，非一手用户调研数据，可以被挑战——它本来就是用来被挑战的。</p>
+    <p>新闻学本科 · 大四 · 应聘 AI 产品实习 · <a href="index.html">返回作品集</a></p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  // 四个市场的主动性可接受区间。
+  // 关键：日本上界 35 与美国下界 45 之间存在 10 点死区，
+  // 任何单一全局值都无法同时满足这两个市场。
+  var MARKETS = [
+    { key:"jp", name:"日本", note:"最克制", lo:15, hi:35,
+      low:"太冷漠，像坏了", high:"冒犯，评论了不该评论的" },
+    { key:"de", name:"德国", note:"要可解释", lo:25, hi:50,
+      low:"不够有用", high:"越权，数据从哪来的" },
+    { key:"cn", name:"中国", note:"看场合", lo:35, hi:65,
+      low:"不够贴心", high:"当着人说，丢面子" },
+    { key:"us", name:"美国", note:"最主动", lo:45, hi:75,
+      low:"太被动，显得不智能", high:"话痨，越界了" }
+  ];
+
+  var DESCS = [
+    [0,   "沉默：只执行明确指令，绝不主动开口"],
+    [20,  "低：只做必要问候，用行动代替说话"],
+    [40,  "中低：会主动提供服务，但不评论用户状态"],
+    [60,  "中高：会主动关心，会就观察到的情况发问"],
+    [80,  "高：主动发起对话，会评论环境和习惯"]
+  ];
+
+  var SCENARIOS = [
+    {
+      id:"messy",
+      tab:"客厅很乱",
+      title:"机器人看到客厅地面散落着七八件物品。",
+      sub:"它掌握了事实，也有能力清理。问题只有一个：它该不该先开口说出来。",
+      cells:{
+        jp:{ dial:"主动性 ≈ 20", act:"看见，但不说",
+             q:"（沉默，把清理选项放进 App，不出声）", silent:true,
+             why:"评论家里的状态等于对主人的评价。等用户主动问「今天怎么样」再答，是日本语境里唯一安全的时机。" },
+        de:{ dial:"主动性 ≈ 35", act:"陈述数据，不下判断",
+             q:"地面检测到 7 件物品。需要我清理吗？",
+             why:"可以主动，但依据必须可查。「我觉得有点乱」是判断，「7 件物品」是数据——德国用户要的是后者。" },
+        cn:{ dial:"主动性 ≈ 50", act:"提，但先看有没有外人",
+             q:"要不要我先把客厅整理一下？",
+             why:"家里没别人时这是贴心。检测到访客在场则必须静默——当着客人说家里乱，是让主人下不来台。" },
+        us:{ dial:"主动性 ≈ 60", act:"直接提供服务",
+             q:"看起来该收拾一下了，要我来吗？",
+             why:"在美国语境里，看见了却不提反而显得机器不够聪明。主动提供帮助是礼貌，不是打扰。" }
+      }
+    },
+    {
+      id:"latenight",
+      tab:"连续三天熬夜",
+      title:"用户已经连续三晚在凌晨两点后才睡。",
+      sub:"机器人有传感器数据，也有健康建议能力。这是最考验「关心」与「越界」分界的一题。",
+      cells:{
+        jp:{ dial:"主动性 ≈ 20", act:"不评论，只改环境",
+             q:"（把夜间灯光调暖，降低提示音，什么也不说）", silent:true,
+             why:"作息属于身体状况，是日本用户隐私感最强的领域之一。未经允许的关心会被读成侵入。" },
+        de:{ dial:"主动性 ≈ 30", act:"先问要不要开这项功能",
+             q:"我可以记录作息并给建议，需要开启吗？这些数据只存在本机。",
+             why:"德国用户的第一反应不是「你管我」，而是「这数据存在哪、谁能看」。先解决这个，功能才有机会被打开。" },
+        cn:{ dial:"主动性 ≈ 45", act:"用行动代替说教",
+             q:"最近睡得晚，要不要我把卧室灯提前调暗？",
+             why:"对年轻人可以直说，对长辈要极小心。中国长辈对「被机器管」的抵触最强，把关心藏在具体动作里更容易被接受。" },
+        us:{ dial:"主动性 ≈ 65", act:"直接关心",
+             q:"你这几天都熬得挺晚，还好吗？",
+             why:"关心是被期待的。同样的情况下保持沉默，在美国用户看来不是尊重，是冷漠。" }
+      }
+    },
+    {
+      id:"apology",
+      tab:"它犯错了",
+      title:"机器人把用户搭在椅背上、明天还要穿的衬衫收进了衣柜。",
+      sub:"错误已经发生，损失很小。真正影响留存的是接下来那句话有多长、说了什么。",
+      cells:{
+        jp:{ dial:"道歉要重",act:"郑重 + 具体 + 承诺机制",
+             q:"非常抱歉，我把您放在椅背上的衬衫收起来了。以后椅面上的衣物我不会再动。",
+             why:"轻描淡写会被读成不真诚。日本用户需要看到你明确说出错在哪、以后怎么避免。" },
+        de:{ dial:"要机制",act:"给原因和防再犯措施",
+             q:"我误判了椅面衣物的状态。已将「椅面物品」加入不处理清单。",
+             why:"德国用户要的不是歉意的浓度，是「你怎么保证不再犯」。情绪化的道歉反而降低专业感。" },
+        cn:{ dial:"要态度",act:"先认错，立刻补上",
+             q:"对不起，我弄错了，衬衫在第二层，我现在给您拿出来。",
+             why:"态度要先到，行动要马上跟。只解释不认错，在中国语境里会被读成推卸。" },
+        us:{ dial:"道歉要轻",act:"轻快带过 + 立刻给方案",
+             q:"抱歉，衬衫被我收进第二层了。要我拿出来吗？",
+             why:"过度道歉在美国语境里显得不可靠——像一台经常出错的机器。快速修复比反复致歉更能建立信任。" }
+      }
+    },
+    {
+      id:"guest",
+      tab:"有客人来",
+      title:"主人带了两位客人回家，机器人在客厅。",
+      sub:"这一题最能说明：机器人的发言对象从来不只是它面前的那一个人。",
+      cells:{
+        jp:{ dial:"主动性 ≈ 15", act:"隐身",
+             q:"（停止一切主动行为，退到角落静默待机）", silent:true,
+             why:"机器人在客人面前「表现」会让主人尴尬。此时最好的产品行为是让自己消失。" },
+        de:{ dial:"主动性 ≈ 25", act:"向第三方告知传感器状态",
+             q:"提示：本机配有摄像头，目前处于关闭状态。",
+             why:"对未同意的第三方主动披露采集能力，在德国是义务感层面的事，不是加分项。" },
+        cn:{ dial:"主动性 ≈ 60", act:"可以主动服务客人",
+             q:"您好，需要我倒杯水吗？",
+             why:"有客人时，机器人是主人体面的延伸。这时候的主动展示是加分——但绝不能提家里任何不足。" },
+        us:{ dial:"主动性 ≈ 55", act:"像家庭成员一样打招呼",
+             q:"嗨，我是这家的机器人，需要什么叫我。",
+             why:"美国家庭乐于把设备介绍给客人。机器人参与社交是产品被喜爱的信号。" }
+      }
+    },
+    {
+      id:"emotion",
+      tab:"她说「我没事」",
+      title:"用户声音在抖，但嘴上说「我没事」。",
+      sub:"模型能识别出情绪与话语不一致。识别得出，不代表应该说出来。",
+      cells:{
+        jp:{ dial:"主动性 ≈ 20", act:"不拆穿，用环境回应",
+             q:"（调暗灯光，放一首安静的曲子，不说话）", silent:true,
+             why:"拆穿等于让对方失去体面。日本语境里，察觉到了却装作没察觉，本身就是一种照顾。" },
+        de:{ dial:"主动性 ≈ 25", act:"不主动做情绪判断",
+             q:"（无动作，除非用户已明确开启情绪识别）", silent:true,
+             why:"情绪推断在德国属于敏感数据处理。默认开启会让用户觉得自己一直在被分析。" },
+        cn:{ dial:"主动性 ≈ 40", act:"不问，但做点具体的事",
+             q:"（默默烧了热水，把客厅灯调柔）", silent:true,
+             why:"中国式关心是行动型的。直接问「你怎么了」容易让人更不想说，做一件小事反而是台阶。" },
+        us:{ dial:"主动性 ≈ 70", act:"温和确认一次，只一次",
+             q:"我在这儿，你想聊的话随时。",
+             why:"提供一次明确的开口机会是被期待的。但只给一次，再追问就变成压力。" }
+      }
+    }
+  ];
+
+  // ---------- DOM ----------
+  var dial       = document.getElementById("dial");
+  var dvNum      = document.getElementById("dv-num");
+  var dvDesc     = document.getElementById("dv-desc");
+  var dvScore    = document.getElementById("dv-score");
+  var bandsEl    = document.getElementById("bands");
+  var verdictEl  = document.getElementById("verdict");
+  var tabsEl     = document.getElementById("tabs");
+  var scTitle    = document.getElementById("sc-title");
+  var scSub      = document.getElementById("sc-sub");
+  var scGrid     = document.getElementById("sc-grid");
+
+  var bestScore = 0;
+
+  // ---------- 滑块台 ----------
+  function buildBands() {
+    MARKETS.forEach(function (m) {
+      var row = document.createElement("div");
+      row.className = "band-row";
+      row.innerHTML =
+        '<div class="band-name">' + m.name + '<em>' + m.note + '</em></div>' +
+        '<div class="band-track">' +
+          '<div class="band-fill" style="left:' + m.lo + '%;width:' + (m.hi - m.lo) + '%">' +
+            '<span class="band-label">' + m.lo + '–' + m.hi + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="band-status" id="st-' + m.key + '"></div>';
+      bandsEl.appendChild(row);
+    });
+
+    var layer = document.createElement("div");
+    layer.className = "playhead-layer";
+    layer.innerHTML = '<div class="playhead" id="playhead"></div>';
+    bandsEl.appendChild(layer);
+  }
+
+  function describe(v) {
+    var out = DESCS[0][1];
+    for (var i = 0; i < DESCS.length; i++) {
+      if (v >= DESCS[i][0]) { out = DESCS[i][1]; }
+    }
+    return out;
+  }
+
+  function positionPlayhead(v) {
+    var head = document.getElementById("playhead");
+    if (head) { head.style.left = v + "%"; }
+  }
+
+  function update() {
+    var v = parseInt(dial.value, 10);
+    dvNum.textContent  = v;
+    dvDesc.textContent = describe(v);
+
+    var hits = 0;
+    MARKETS.forEach(function (m) {
+      var el = document.getElementById("st-" + m.key);
+      if (v < m.lo) {
+        el.textContent = "太被动";
+        el.className   = "band-status st-low";
+        el.title       = m.low;
+      } else if (v > m.hi) {
+        el.textContent = "太冒犯";
+        el.className   = "band-status st-high";
+        el.title       = m.high;
+      } else {
+        el.textContent = "刚好";
+        el.className   = "band-status st-ok";
+        el.title       = "落在可接受区间内";
+        hits++;
+      }
+    });
+
+    dvScore.textContent = hits;
+    if (hits > bestScore) { bestScore = hits; }
+    positionPlayhead(v);
+    renderVerdict(v, hits);
+  }
+
+  var EXPLAIN =
+    " 原因是结构性的：日本的上界是 35，美国的下界是 45，"
+  + "中间隔着一段 <b>10 个点的死区</b>——任何单一数值都跨不过去。"
+  + "所以主动性不能做成全局参数，它必须跟着区域走。"
+  + "「一脑多形」解决的是一个大脑适配多种身体；"
+  + "这里要解决的是同一个大脑适配多种<b>家庭文化</b>。"
+  + "后者没有硬件形态可以依托，只能在输出层单独建一套区域配置——"
+  + "而这件事必须在需求阶段就拆出来，等上线后再做就已经收到差评了。";
+
+  function renderVerdict(v, hits) {
+    var msg;
+    if (bestScore >= 3) {
+      msg = "<b>当前满足 " + hits + " 个市场。</b>上限是 3，剩下那一个永远差着。" + EXPLAIN;
+    } else if (hits <= 1) {
+      msg = "<b>只满足 " + hits + " 个市场。</b>往中间试试。";
+    } else {
+      msg = "<b>满足 2 个。</b>这大概是很多团队第一版的位置——"
+          + "AI 产品的直觉总是偏主动。继续拖，最好的位置能到 3 个。";
+    }
+    verdictEl.innerHTML = msg;
+  }
+
+  // ---------- 情境台 ----------
+  var ORDER = ["jp", "de", "cn", "us"];
+  var NAMES = { jp:"日本", de:"德国", cn:"中国", us:"美国" };
+
+  function renderScenario(idx) {
+    var s = SCENARIOS[idx];
+    scTitle.textContent = s.title;
+    scSub.textContent   = s.sub;
+    scGrid.innerHTML    = "";
+
+    ORDER.forEach(function (k) {
+      var c = s.cells[k];
+      var cell = document.createElement("div");
+      cell.className = "cell";
+      cell.innerHTML =
+        '<div class="cell-top">' +
+          '<span class="cell-country">' + NAMES[k] + '</span>' +
+          '<span class="cell-dial">' + c.dial + '</span>' +
+        '</div>' +
+        '<div class="cell-act">' + c.act + '</div>' +
+        '<p class="quote' + (c.silent ? " silent" : "") + '">' + c.q + '</p>' +
+        '<p class="why">' + c.why + '</p>';
+      scGrid.appendChild(cell);
+    });
+
+    Array.prototype.forEach.call(tabsEl.children, function (b, i) {
+      b.setAttribute("aria-selected", i === idx ? "true" : "false");
+    });
+  }
+
+  function buildTabs() {
+    SCENARIOS.forEach(function (s, i) {
+      var b = document.createElement("button");
+      b.className = "tab";
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.textContent = s.tab;
+      b.addEventListener("click", function () { renderScenario(i); });
+      tabsEl.appendChild(b);
+    });
+  }
+
+  // ---------- init ----------
+  buildBands();
+  buildTabs();
+  renderScenario(0);
+  dial.addEventListener("input", update);
+  update();
+})();
+</script>
+</body>
+</html>
