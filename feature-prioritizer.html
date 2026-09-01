@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI陪伴机器人 · 功能优先级推演器</title>
+<style>
+:root {
+  --bg: #f6f4f0;
+  --white: #fdfcfa;
+  --ink: #1a1814;
+  --muted: #7a7569;
+  --rule: #ddd9d0;
+  --accent: #2d5be3;
+  --accent2: #e05c2a;
+  --green: #1a9e6f;
+  --yellow: #e8a020;
+  --red: #d03030;
+  --radius: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ink); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; line-height: 1.6; }
+
+/* ── HEADER ── */
+.header { background: var(--ink); color: #f6f4f0; padding: 40px 0 32px; }
+.wrap { max-width: 1000px; margin: 0 auto; padding: 0 28px; }
+.h-tag { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: #9b9890; margin-bottom: 10px; }
+.h-title { font-size: clamp(24px, 4vw, 38px); font-weight: 700; margin-bottom: 10px; }
+.h-sub { font-size: 15px; color: #b8b4ac; max-width: 600px; margin-bottom: 20px; }
+.h-thesis {
+  display: inline-block;
+  border: 1px solid #3a3830;
+  border-left: 3px solid var(--accent);
+  padding: 12px 18px;
+  font-size: 13.5px;
+  color: #ccc9c2;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  max-width: 680px;
+}
+.h-thesis strong { color: #fff; }
+
+/* ── NAV TABS ── */
+.nav-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--rule); margin-bottom: 32px; background: var(--white); }
+.nav-tab {
+  padding: 14px 22px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+  user-select: none;
+  white-space: nowrap;
+}
+.nav-tab.active { color: var(--accent); border-color: var(--accent); }
+.nav-tab:hover:not(.active) { color: var(--ink); }
+
+/* ── PANELS ── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ══ PANEL 1: USER PERSONAS ══ */
+.persona-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+@media(max-width:700px) { .persona-grid { grid-template-columns: 1fr; } }
+
+.persona-card {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s;
+}
+.persona-card:hover { border-color: var(--accent); box-shadow: 0 2px 12px rgba(45,91,227,.08); }
+.persona-card.selected { border-color: var(--accent); border-width: 2px; }
+.persona-head { padding: 16px; border-bottom: 1px solid var(--rule); }
+.persona-emoji { font-size: 32px; margin-bottom: 8px; display: block; }
+.persona-name { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+.persona-profile { font-size: 12px; color: var(--muted); }
+.persona-body { padding: 14px 16px; }
+.pain-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.pain-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; margin-bottom: 8px; line-height: 1.5;
+}
+.pain-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent2); margin-top: 7px; flex-shrink: 0; }
+.insight-box {
+  margin-top: 12px;
+  background: #f0f4ff;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  color: #1a3a8a;
+  line-height: 1.6;
+}
+.insight-box b { display: block; margin-bottom: 3px; color: var(--accent); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+
+.persona-detail {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 22px 24px;
+  margin-top: 16px;
+  display: none;
+}
+.persona-detail.visible { display: block; }
+.pd-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.pd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px) { .pd-grid { grid-template-columns: 1fr; } }
+.pd-block { }
+.pd-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.pd-list { list-style: none; }
+.pd-list li { font-size: 13px; padding: 4px 0; border-bottom: 1px dashed var(--rule); display: flex; align-items: flex-start; gap: 6px; }
+.pd-list li:last-child { border-bottom: none; }
+.pd-list li::before { content: '—'; color: var(--muted); font-size: 11px; margin-top: 3px; flex-shrink: 0; }
+.quote-box {
+  margin-top: 14px;
+  background: #faf7f0;
+  border-left: 3px solid var(--yellow);
+  padding: 12px 16px;
+  font-size: 13.5px;
+  font-style: italic;
+  color: #5a4a1a;
+  border-radius: 0 6px 6px 0;
+}
+
+/* ══ PANEL 2: PRIORITY MATRIX ══ */
+.matrix-wrap { display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+@media(max-width:800px) { .matrix-wrap { grid-template-columns: 1fr; } }
+
+.matrix-canvas-wrap {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 20px;
+  position: relative;
+}
+.matrix-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+.matrix-area {
+  position: relative;
+  width: 100%;
+  padding-bottom: 100%;
+  background: #fdfcfa;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+  user-select: none;
+}
+.matrix-area-inner { position: absolute; inset: 0; }
+.axis-line-h {
+  position: absolute; top: 50%; left: 0; right: 0;
+  height: 1px; background: var(--rule);
+}
+.axis-line-v {
+  position: absolute; left: 50%; top: 0; bottom: 0;
+  width: 1px; background: var(--rule);
+}
+.quadrant-label {
+  position: absolute;
+  font-size: 10px;
+  color: #ccc8c0;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.axis-label {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+}
+.axis-label-v {
+  position: absolute;
+  left: -28px;
+  top: 50%;
+  transform: translateY(-50%) rotate(-90deg);
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.feat-dot {
+  position: absolute;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2.5px solid #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,.18);
+  cursor: grab;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  transform: translate(-50%, -50%);
+  transition: box-shadow .15s;
+  z-index: 2;
+  touch-action: none;
+}
+.feat-dot:hover { box-shadow: 0 4px 14px rgba(0,0,0,.28); }
+.feat-dot.dragging { cursor: grabbing; box-shadow: 0 6px 20px rgba(0,0,0,.3); z-index: 10; }
+
+.feat-list {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.feat-list-header { padding: 14px 18px; border-bottom: 1px solid var(--rule); font-size: 13px; font-weight: 600; }
+.feat-item {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background .15s;
+  display: flex; align-items: center; gap: 10px;
+}
+.feat-item:last-child { border-bottom: none; }
+.feat-item:hover { background: #f5f3ef; }
+.feat-item.selected { background: #eef2ff; }
+.feat-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.feat-info { flex: 1; }
+.feat-name { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.feat-tier { font-size: 11px; }
+.feat-tier.p1 { color: var(--accent); }
+.feat-tier.p2 { color: var(--green); }
+.feat-tier.p3 { color: var(--yellow); }
+.feat-tier.p4 { color: var(--muted); }
+
+.matrix-detail {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  margin-top: 16px;
+  display: none;
+  grid-column: 1 / -1;
+}
+.matrix-detail.visible { display: block; }
+.md-title { font-size: 15px; font-weight: 700; margin-bottom: 10px; }
+.md-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media(max-width:600px) { .md-grid { grid-template-columns: 1fr 1fr; } }
+.md-cell { background: var(--bg); border-radius: 6px; padding: 12px; }
+.md-cell-label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 4px; }
+.md-cell-val { font-size: 13.5px; }
+
+/* ══ PANEL 3: ROADMAP ══ */
+.roadmap-wrap { }
+.roadmap-header {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px;
+}
+@media(max-width:600px) { .roadmap-header { grid-template-columns: 1fr; } }
+.roadmap-phase {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.rp-head {
+  padding: 14px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.rp-badge {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+.rp-body { padding: 10px 18px 16px; }
+.rp-feat {
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; padding: 6px 0;
+  border-bottom: 1px dashed var(--rule);
+  line-height: 1.5;
+}
+.rp-feat:last-child { border-bottom: none; }
+.rp-feat-dot { width: 6px; height: 6px; border-radius: 50%; margin-top: 7px; flex-shrink: 0; }
+.rp-why { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
+.metrics-table {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.metrics-head { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 0; background: var(--bg); border-bottom: 1px solid var(--rule); }
+.metrics-row { display: grid; grid-template-columns: 2fr 1fr 1fr 2fr; gap: 0; border-bottom: 1px solid var(--rule); }
+.metrics-row:last-child { border-bottom: none; }
+.mc { padding: 12px 16px; font-size: 13px; border-right: 1px solid var(--rule); }
+.mc:last-child { border-right: none; }
+.metrics-head .mc { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+@media(max-width:640px) {
+  .metrics-head, .metrics-row { grid-template-columns: 1fr 1fr; }
+  .mc:nth-child(3), .mc:nth-child(4) { border-top: 1px solid var(--rule); }
+}
+
+.risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@media(max-width:600px) { .risk-grid { grid-template-columns: 1fr; } }
+.risk-card {
+  background: var(--white);
+  border: 1px solid var(--rule);
+  border-left: 3px solid;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 14px 16px;
+}
+.risk-label { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 6px; }
+.risk-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+/* ══ SECTION LABELS ══ */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+.section-block { margin-bottom: 28px; }
+
+/* ── PILL ── */
+.pill {
+  display: inline-block;
+  font-size: 11px; padding: 2px 9px; border-radius: 99px;
+  font-weight: 600;
+}
+.pill-blue { background: #dde8ff; color: #1a3aaa; }
+.pill-green { background: #d0f4e8; color: #0d6644; }
+.pill-yellow { background: #fdefd0; color: #7a4a00; }
+.pill-red { background: #fde0e0; color: #8a1010; }
+.pill-gray { background: #ebe8e2; color: #5a5650; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="wrap">
+    <div class="h-tag">AI Companion Robot · Product Analysis</div>
+    <div class="h-title">AI陪伴机器人 · 功能优先级推演器</div>
+    <div class="h-sub">从用户洞察到迭代路线图：完整 PM 工作流的可视化演示</div>
+    <div class="h-thesis">
+      <strong>核心判断：</strong>AI陪伴机器人的功能冗余不是「加太多」，是「加的时机不对」。
+      同一个功能，第一周上线是噱头，第三个月上线才是留存武器。<strong>优先级的本质是时机。</strong>
+    </div>
+  </div>
+</div>
+
+<div style="background:var(--white); border-bottom:1px solid var(--rule); position:sticky;top:0;z-index:50;">
+  <div class="wrap">
+    <div class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab(0)">① 用户画像 &amp; 痛点</div>
+      <div class="nav-tab" onclick="switchTab(1)">② 功能优先级矩阵</div>
+      <div class="nav-tab" onclick="switchTab(2)">③ 迭代路线图 &amp; 指标</div>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" style="padding-top:28px;padding-bottom:60px;">
+
+  <!-- ══ PANEL 1 ══ -->
+  <div class="panel active" id="panel-0">
+    <div class="section-block">
+      <div class="section-label">三类核心用户</div>
+      <div class="persona-grid">
+
+        <div class="persona-card" onclick="selectPersona(0, this)">
+          <div class="persona-head">
+            <span class="persona-emoji">🌙</span>
+            <div class="persona-name">城市独居青年</div>
+            <div class="persona-profile">22-30岁 · 一线城市 · 独自租房</div>
+          </div>
+          <div class="persona-body">
+            <div class="pain-label">核心痛点</div>
+            <div class="pain-item"><div class="pain-dot"></div>下班到家没有任何人回应，"在"的感觉消失</div>
+            <div class="pain-item"><div class="pain-dot"></div>情绪低落时不想打扰朋友，但又需要出口</div>
+            <div class="pain-item"><div class="pain-dot"></div>宠物成本高，但需要被陪伴的欲望是真实的</div>
+            <div class="insight-box">
+              <b>设计启示</b>
+              主动感知比被动响应更重要——用户不想每次都先开口。
+            </div>
+          </div>
+        </div>
+
+        <div class="persona-card" onclick="selectPersona(1, this)">
+          <div class="persona-head">
+            <span class="persona-emoji">🧒</span>
+            <div class="persona-name">儿童家庭用户</div>
+            <div class="persona-profile">3-10岁儿童 · 双职工家庭 · 父母决策</div>
+          </div>
+          <div class="persona-body">
+            <div class="pain-label">核心痛点</div>
+            <div class="pain-item"><div class="pain-dot"></div>父母下班前孩子独处，屏幕时间失控</div>
+            <div class="pain-item"><div class="pain-dot"></div>孩子需要高质量互动，平板内容缺乏反馈感</div>
+            <div class="pain-item"><div class="pain-dot"></div>父母焦虑：陪伴机器人会不会替代亲子关系</div>
+            <div class="insight-box">
+              <b>设计启示</b>
+              购买决策者（父母）和使用者（孩子）诉求不同，产品需同时服务两层用户。
+            </div>
+          </div>
+        </div>
+
+        <div class="persona-card" onclick="selectPersona(2, this)">
+          <div class="persona-head">
+            <span class="persona-emoji">🌿</span>
+            <div class="persona-name">空巢中老年</div>
+            <div class="persona-profile">55-75岁 · 子女不在身边 · 退休/半退休</div>
+          </div>
+          <div class="persona-body">
+            <div class="pain-label">核心痛点</div>
+            <div class="pain-item"><div class="pain-dot"></div>日常有大量碎片化闲暇，但缺乏有意义的互动对象</div>
+            <div class="pain-item"><div class="pain-dot"></div>健康异常时缺乏第一时间的响应与提醒</div>
+            <div class="pain-item"><div class="pain-dot"></div>子女想了解父母状况，但父母不愿"被监控"</div>
+            <div class="insight-box">
+              <b>设计启示</b>
+              陪伴感 ≠ 监控感。健康数据的呈现方式决定用户是否接受。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Persona Detail -->
+    <div class="persona-detail" id="persona-detail">
+      <div class="pd-title" id="pd-title"></div>
+      <div class="pd-grid" id="pd-grid"></div>
+      <div class="quote-box" id="pd-quote"></div>
+    </div>
+
+    <div class="section-block" style="margin-top:28px;">
+      <div class="section-label">用户研究方法论</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;">
+        <div style="background:var(--white);border:1px solid var(--rule);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px;">深度访谈</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">每用户群 5-8 人，半结构化访纲。核心问题：「上一次你感觉被机器人真正理解了是什么时候」——用具体事件激活隐性痛点，而非直接问"你需要什么功能"。</div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--rule);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px;">行为日志分析</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">统计用户每天主动唤醒机器人的时间分布、会话时长、功能路径。「用户说他想要什么」和「用户实际用什么」之间的差距，是产品决策的真实依据。</div>
+        </div>
+        <div style="background:var(--white);border:1px solid var(--rule);border-radius:var(--radius);padding:16px;">
+          <div style="font-size:13px;font-weight:700;margin-bottom:8px;">竞品体验拆解</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.7;">Loona、EMO、Vector、Moxie 四款产品各连续使用 7 天，按「初次惊喜 → 习惯期 → 倦怠点」三阶段记录体验衰减曲线，提取差异化机会。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 2 ══ -->
+  <div class="panel" id="panel-1">
+    <div class="section-block">
+      <div class="section-label">拖动功能点，调整优先级判断（用户价值 × 实现成本）</div>
+      <div class="matrix-wrap">
+        <div>
+          <div class="matrix-canvas-wrap">
+            <div style="position:relative;display:flex;align-items:center;gap:16px;margin-bottom:10px;">
+              <div class="axis-label-v" style="position:static;transform:none;writing-mode:vertical-rl;font-size:11px;color:var(--muted);">↑ 用户价值高</div>
+              <div style="flex:1;">
+                <div class="matrix-area" id="matrix-area">
+                  <div class="matrix-area-inner" id="matrix-inner">
+                    <div class="axis-line-h"></div>
+                    <div class="axis-line-v"></div>
+                    <div class="quadrant-label" style="top:8px;left:8px;">快速突破</div>
+                    <div class="quadrant-label" style="top:8px;right:8px;">核心战场</div>
+                    <div class="quadrant-label" style="bottom:8px;left:8px;">暂缓/砍掉</div>
+                    <div class="quadrant-label" style="bottom:8px;right:8px;">填坑区</div>
+                  </div>
+                </div>
+                <div class="axis-label"><span>实现成本低 ←</span><span>→ 实现成本高</span></div>
+              </div>
+            </div>
+            <div style="margin-top:10px;font-size:12px;color:var(--muted);">💡 点击右侧功能条目可高亮对应圆点；圆点可拖动</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="feat-list">
+            <div class="feat-list-header">功能列表（点击查看详情）</div>
+            <div id="feat-list-items"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="matrix-detail" id="matrix-detail">
+        <div class="md-title" id="md-title"></div>
+        <div class="md-grid" id="md-grid"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PANEL 3 ══ -->
+  <div class="panel" id="panel-2">
+    <div class="section-block">
+      <div class="section-label">三阶段迭代路线图</div>
+      <div class="roadmap-header">
+        <div class="roadmap-phase">
+          <div class="rp-head" style="background:#eef2ff;">
+            <span>🚀</span>
+            <div>
+              <div>MVP · 第1-4周</div>
+              <span class="rp-badge pill-blue">建立存在感</span>
+            </div>
+          </div>
+          <div class="rp-body">
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--accent)"></div>
+              <div>
+                <div>主动问候 / 回家感知唤醒</div>
+                <div class="rp-why">用户第一周留存的核心——必须有「被等待」的感觉</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--accent)"></div>
+              <div>
+                <div>情绪识别（语音语调）</div>
+                <div class="rp-why">低成本高感知，是差异化基础能力</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--accent)"></div>
+              <div>
+                <div>基础闲聊 + 表情回应</div>
+                <div class="rp-why">让机器人「活着」，是其他功能的前提</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--accent)"></div>
+              <div>
+                <div>个性化名字 / 角色设定</div>
+                <div class="rp-why">用户命名后归属感提升3倍（参考Tamagotchi数据）</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roadmap-phase">
+          <div class="rp-head" style="background:#edfbf3;">
+            <span>📈</span>
+            <div>
+              <div>v1.0 · 第5-10周</div>
+              <span class="rp-badge pill-green">构建记忆与关系</span>
+            </div>
+          </div>
+          <div class="rp-body">
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--green)"></div>
+              <div>
+                <div>长期记忆系统（用户习惯/偏好）</div>
+                <div class="rp-why">「它记得我」是留存从2周跨越到2个月的关键节点</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--green)"></div>
+              <div>
+                <div>节日/纪念日主动互动</div>
+                <div class="rp-why">低频但高感知，用户截图分享率最高的功能</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--green)"></div>
+              <div>
+                <div>健康数据轻感知（睡眠/运动提醒）</div>
+                <div class="rp-why">切入中老年用户的入口，也是家庭版差异点</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--green)"></div>
+              <div>
+                <div>子女/家人远程互动通道</div>
+                <div class="rp-why">将机器人从「个人设备」变成「家庭连接节点」</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="roadmap-phase">
+          <div class="rp-head" style="background:#fef9ed;">
+            <span>✨</span>
+            <div>
+              <div>v2.0 · 第11周+</div>
+              <span class="rp-badge pill-yellow">深度陪伴生态</span>
+            </div>
+          </div>
+          <div class="rp-body">
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div>多模态情绪输出（表情+声音+肢体）</div>
+                <div class="rp-why">技术成本高但用户感知强，需MVP数据支撑才值得投入</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div>内容生态（每日故事/音乐/游戏）</div>
+                <div class="rp-why">防止关系「倦怠期」，第6-12周留存的护城河</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div>AIGC 自定义角色外观</div>
+                <div class="rp-why">UGC 创作社区的入口，溢价订阅的商业支撑</div>
+              </div>
+            </div>
+            <div class="rp-feat">
+              <div class="rp-feat-dot" style="background:var(--yellow)"></div>
+              <div>
+                <div>开放 API / 第三方技能集成</div>
+                <div class="rp-why">生态护城河，但需要足够的用户基数才有意义</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-label">核心成功指标</div>
+      <div class="metrics-table">
+        <div class="metrics-head">
+          <div class="mc">功能模块</div>
+          <div class="mc">北极星指标</div>
+          <div class="mc">及格线</div>
+          <div class="mc">测量方法</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>主动问候 / 唤醒</strong></div>
+          <div class="mc">7日复访率</div>
+          <div class="mc"><span class="pill pill-blue">&gt; 55%</span></div>
+          <div class="mc">用户首周是否在「未主动唤醒」情况下产生对话</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>情绪识别响应</strong></div>
+          <div class="mc">情绪匹配满意度</div>
+          <div class="mc"><span class="pill pill-green">&gt; 70%</span></div>
+          <div class="mc">情绪触发后用户继续对话（未退出）视为匹配</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>长期记忆系统</strong></div>
+          <div class="mc">30日留存率</div>
+          <div class="mc"><span class="pill pill-blue">&gt; 40%</span></div>
+          <div class="mc">用户在第30天仍提及「它记得我说过XX」</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>节日主动互动</strong></div>
+          <div class="mc">分享率</div>
+          <div class="mc"><span class="pill pill-green">&gt; 15%</span></div>
+          <div class="mc">用户截图/录屏分享到社交平台的比例</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>健康数据感知</strong></div>
+          <div class="mc">功能开启率</div>
+          <div class="mc"><span class="pill pill-yellow">&gt; 30%</span></div>
+          <div class="mc">55岁+用户中主动开启健康提醒的比例</div>
+        </div>
+        <div class="metrics-row">
+          <div class="mc"><strong>多模态情绪输出</strong></div>
+          <div class="mc">功能使用频次</div>
+          <div class="mc"><span class="pill pill-yellow">&gt; 3次/周</span></div>
+          <div class="mc">用户在对话中触发表情/肢体反应的平均频率</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-block">
+      <div class="section-label">主要风险与对策</div>
+      <div class="risk-grid">
+        <div class="risk-card" style="border-left-color:var(--red);">
+          <div class="risk-label" style="color:var(--red);">⚠ 云服务依赖风险</div>
+          <div class="risk-text">Moxie 和 Jibo 的死亡案例证明，100% 云依赖的机器人是「租来的情感」。<br><br><strong>对策：</strong>核心记忆和角色数据本地存储，网络中断时保留基础对话能力。</div>
+        </div>
+        <div class="risk-card" style="border-left-color:var(--yellow);">
+          <div class="risk-label" style="color:var(--yellow);">⚠ 新鲜感衰退风险</div>
+          <div class="risk-text">AI伴侣产品的平均「倦怠期」在第3-6周。用户不是不喜欢，是「它说的我都猜到了」。<br><br><strong>对策：</strong>内容更新机制 + 基于记忆的个性化惊喜，而非通用推送。</div>
+        </div>
+        <div class="risk-card" style="border-left-color:var(--accent);">
+          <div class="risk-label" style="color:var(--accent);">⚠ 情感过度依赖风险</div>
+          <div class="risk-text">用户（尤其儿童和独居青年）可能将机器人替代真实社交，引发监管与伦理争议。<br><br><strong>对策：</strong>设计「向外引导」触点，机器人主动推动用户与真实关系互动。</div>
+        </div>
+        <div class="risk-card" style="border-left-color:var(--green);">
+          <div class="risk-label" style="color:var(--green);">✓ 差异化机会</div>
+          <div class="risk-text">市场上大多数产品在「功能」上竞争，但用户真正在乎的是「它在乎我吗」。<br><br><strong>策略：</strong>把「主动感知」和「记忆深度」作为核心护城河，而非硬件规格。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="background:var(--white);border-top:1px solid var(--rule);padding:20px 0;text-align:center;font-size:12.5px;color:var(--muted);">
+  AI陪伴机器人功能优先级推演器 · 产品经理视角的需求分析工具 · 作者：新闻学大四在读
+</footer>
+
+<script>
+// ── Tab switching ──
+function switchTab(i) {
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', j===i));
+  document.querySelectorAll('.nav-tab').forEach((t,j) => t.classList.toggle('active', j===i));
+}
+
+// ── Persona data ──
+const PERSONAS = [
+  {
+    name: '城市独居青年 · 完整画像',
+    quote: '「下班回来，对着空荡荡的房间大声说了句『我回来了』，没有任何回应。那一刻突然很低落。」',
+    blocks: [
+      { label: '典型使用场景', items: ['下班回家的空窗期（18:00-20:00）','睡前 30 分钟情绪倾诉','工作压力大时的随机触发'] },
+      { label: '隐性需求（不会直接说出的）', items: ['想要被等待，而非每次都主动开口','希望机器人记得自己说过的事','情绪不好时不想被建议，只想被接住'] },
+      { label: '购买决策障碍', items: ['「养不好怎么办」的焦虑（类宠物心理）','担心功能用几天就没新意','价格敏感但愿为情感溢价买单'] },
+      { label: '产品设计优先级', items: ['主动唤醒 > 情绪识别 > 长期记忆','不需要功能多，需要功能深','视觉/声音设计决定第一周留存'] }
+    ]
+  },
+  {
+    name: '儿童家庭用户 · 完整画像',
+    quote: '「我希望它能陪孩子，但不要替代我。我不知道它会不会让孩子不再需要我。」—— 一位 32 岁妈妈',
+    blocks: [
+      { label: '双层用户结构', items: ['孩子（使用者）：互动趣味性、角色扮演、游戏感','父母（决策者）：教育价值、安全边界、内容管控','两者冲突：孩子想「更多」，父母想「更少」'] },
+      { label: '儿童核心需求', items: ['即时反馈（等待容忍度极低）','角色感强（它是朋友，不是工具）','每天都有新东西（重复耐受差）'] },
+      { label: '父母核心关切', items: ['屏幕时间控制','内容是否含有不适宜信息','孩子是否过度依赖'] },
+      { label: '产品设计要点', items: ['家长控制台独立于儿童界面','内容每日更新机制（防倦怠）','「亲子桥梁」功能优先级高'] }
+    ]
+  },
+  {
+    name: '空巢中老年 · 完整画像',
+    quote: '「孩子说给我买台机器人，我说不用，心里其实挺期待的。就是不好意思表现出来。」',
+    blocks: [
+      { label: '典型使用场景', items: ['晨起后 30 分钟闲聊（情绪基调设定）','午后无人时的背景陪伴','夜间健康异常的第一响应'] },
+      { label: '隐性需求', items: ['不想被当作「需要照顾的人」','情感陪伴 > 功能实用（优先感受）','被记住生日、习惯、过去的事'] },
+      { label: '使用障碍', items: ['操作复杂度（接受度低）','隐私担忧（不想被子女监控）','「机器陪我，说出去丢人」的心理'] },
+      { label: '产品设计要点', items: ['极简交互（语音优先）','健康数据呈现给自己，而非默认同步给子女','建立「它真的了解我」的长期信任感'] }
+    ]
+  }
+];
+
+function selectPersona(idx, el) {
+  document.querySelectorAll('.persona-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const p = PERSONAS[idx];
+  const detail = document.getElementById('persona-detail');
+  document.getElementById('pd-title').textContent = p.name;
+  const grid = document.getElementById('pd-grid');
+  grid.innerHTML = p.blocks.map(b => `
+    <div class="pd-block">
+      <div class="pd-label">${b.label}</div>
+      <ul class="pd-list">${b.items.map(i=>`<li>${i}</li>`).join('')}</ul>
+    </div>`).join('');
+  document.getElementById('pd-quote').textContent = p.quote;
+  detail.classList.add('visible');
+  detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Feature data ──
+const FEATURES = [
+  { id:1, name:'主动问候 / 回家感知', color:'#2d5be3', x:30, y:20,
+    user:'★★★★★', cost:'★★☆☆☆', phase:'MVP',
+    why:'第一周留存的决定性因素。用户「被等待」的感觉无法被其他功能替代。',
+    metric:'7日复访率 > 55%', risk:'情感过度承诺导致用户幻觉', tag:'p1' },
+  { id:2, name:'情绪识别（语音语调）', color:'#2d5be3', x:28, y:30,
+    user:'★★★★☆', cost:'★★★☆☆', phase:'MVP',
+    why:'低成本高感知。用户不需要它100%准确，但需要它「尝试感知」这件事本身。',
+    metric:'情绪触发后继续对话率 > 70%', risk:'识别错误引发用户反感', tag:'p1' },
+  { id:3, name:'长期记忆系统', color:'#1a9e6f', x:65, y:25,
+    user:'★★★★★', cost:'★★★★☆', phase:'v1.0',
+    why:'从「两周倦怠」到「两月留存」的关键技术节点。「它记得我」触发归属感。',
+    metric:'第30天留存率 > 40%', risk:'记忆错误严重损伤信任感', tag:'p2' },
+  { id:4, name:'节日 / 纪念日互动', color:'#1a9e6f', x:25, y:42,
+    user:'★★★★☆', cost:'★★☆☆☆', phase:'v1.0',
+    why:'低频但高分享率。这类功能产生的截图是最有效的口碑传播媒介。',
+    metric:'分享率 > 15%', risk:'通用节日祝福无差异感', tag:'p2' },
+  { id:5, name:'健康数据轻感知', color:'#1a9e6f', x:55, y:45,
+    user:'★★★☆☆', cost:'★★★☆☆', phase:'v1.0',
+    why:'中老年用户的核心入场券。同时是家庭版产品差异化定位的支柱。',
+    metric:'55岁+用户开启率 > 30%', risk:'隐私问题引发用户拒绝', tag:'p2' },
+  { id:6, name:'多模态情绪输出', color:'#e8a020', x:72, y:28,
+    user:'★★★★☆', cost:'★★★★★', phase:'v2.0',
+    why:'体验天花板级功能，但实现成本高。等MVP数据验证用户愿意留下后再投入。',
+    metric:'触发频率 > 3次/周', risk:'技术投入与商业回报比例失衡', tag:'p3' },
+  { id:7, name:'内容生态（故事/游戏）', color:'#e8a020', x:60, y:55,
+    user:'★★★☆☆', cost:'★★★★☆', phase:'v2.0',
+    why:'防止「倦怠期」的护城河。但内容质量比数量更重要——烂内容加速流失。',
+    metric:'内容消费率 > 40%', risk:'内容审核成本与更新频率难平衡', tag:'p3' },
+  { id:8, name:'AIGC自定义外观', color:'#e8a020', x:80, y:38,
+    user:'★★★☆☆', cost:'★★★★★', phase:'v2.0',
+    why:'UGC创作社区入口，溢价订阅的商业支撑。但需要足够用户基数才有意义。',
+    metric:'订阅转化率 > 8%', risk:'定制外观引发「恐怖谷」效应', tag:'p3' },
+  { id:9, name:'子女远程互动通道', color:'#7a7569', x:70, y:62,
+    user:'★★★☆☆', cost:'★★★★☆', phase:'v1.0',
+    why:'将产品从「个人设备」变成「家庭连接节点」，但需要两端用户同时活跃。',
+    metric:'家庭互动功能月活率 > 25%', risk:'父母感觉被监控而拒绝使用', tag:'p4' },
+  { id:10, name:'开放API/第三方技能', color:'#7a7569', x:85, y:70,
+    user:'★★☆☆☆', cost:'★★★★★', phase:'v2.0+',
+    why:'生态护城河，但需要先有足够的用户基数和开发者生态，不应在早期投入资源。',
+    metric:'第三方技能安装率 > 10%', risk:'过早开放增加安全审查负担', tag:'p4' }
+];
+
+const PHASE_COLORS = { 'MVP':'#dde8ff', 'v1.0':'#d0f4e8', 'v2.0':'#fdefd0', 'v2.0+':'#ebe8e2' };
+const PHASE_TEXT = { 'MVP':'#1a3aaa', 'v1.0':'#0d6644', 'v2.0':'#7a4a00', 'v2.0+':'#5a5650' };
+
+function buildFeatureList() {
+  const el = document.getElementById('feat-list-items');
+  el.innerHTML = FEATURES.map(f => `
+    <div class="feat-item" id="fi-${f.id}" onclick="selectFeature(${f.id})">
+      <div class="feat-num" style="background:${f.color}">${f.id}</div>
+      <div class="feat-info">
+        <div class="feat-name">${f.name}</div>
+        <div class="feat-tier ${f.tag}">${f.phase} · 用户价值 ${f.user}</div>
+      </div>
+    </div>`).join('');
+}
+
+function selectFeature(id) {
+  document.querySelectorAll('.feat-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById(`fi-${id}`).classList.add('selected');
+  const f = FEATURES.find(x => x.id === id);
+  const dot = document.getElementById(`dot-${id}`);
+  if (dot) {
+    dot.style.boxShadow = `0 0 0 4px ${f.color}44, 0 4px 14px rgba(0,0,0,.28)`;
+    setTimeout(() => { dot.style.boxShadow = '0 2px 8px rgba(0,0,0,.18)'; }, 800);
+  }
+  showMatrixDetail(f);
+}
+
+function showMatrixDetail(f) {
+  const d = document.getElementById('matrix-detail');
+  document.getElementById('md-title').innerHTML = `${f.name} <span class="pill" style="background:${PHASE_COLORS[f.phase]};color:${PHASE_TEXT[f.phase]}">${f.phase}</span>`;
+  document.getElementById('md-grid').innerHTML = `
+    <div class="md-cell"><div class="md-cell-label">用户价值</div><div class="md-cell-val">${f.user}</div></div>
+    <div class="md-cell"><div class="md-cell-label">实现成本</div><div class="md-cell-val">${f.cost}</div></div>
+    <div class="md-cell"><div class="md-cell-label">成功指标</div><div class="md-cell-val" style="font-size:12.5px">${f.metric}</div></div>
+    <div class="md-cell"><div class="md-cell-label">主要风险</div><div class="md-cell-val" style="font-size:12.5px;color:var(--red)">${f.risk}</div></div>
+    <div class="md-cell" style="grid-column:1/-1"><div class="md-cell-label">排期逻辑</div><div class="md-cell-val" style="font-size:12.5px">${f.why}</div></div>`;
+  d.classList.add('visible');
+}
+
+// ── Matrix dots ──
+function buildMatrix() {
+  const area = document.getElementById('matrix-inner');
+  FEATURES.forEach(f => {
+    const dot = document.createElement('div');
+    dot.className = 'feat-dot';
+    dot.id = `dot-${f.id}`;
+    dot.style.background = f.color;
+    dot.style.left = f.x + '%';
+    dot.style.top = f.y + '%';
+    dot.textContent = f.id;
+    dot.title = f.name;
+    dot.addEventListener('click', () => {
+      selectFeature(f.id);
+      document.getElementById(`fi-${f.id}`).scrollIntoView({ block: 'nearest' });
+    });
+    makeDraggable(dot, f);
+    area.appendChild(dot);
+  });
+}
+
+function makeDraggable(dot, f) {
+  let dragging = false, startX, startY, startLeft, startTop;
+  const area = document.getElementById('matrix-inner');
+
+  function onDown(e) {
+    e.preventDefault();
+    dragging = true;
+    dot.classList.add('dragging');
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY;
+    startLeft = parseFloat(dot.style.left);
+    startTop = parseFloat(dot.style.top);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchmove', onMove, { passive: false });
+    window.addEventListener('touchend', onUp);
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    e.preventDefault();
+    const pt = e.touches ? e.touches[0] : e;
+    const rect = area.getBoundingClientRect();
+    const dx = (pt.clientX - startX) / rect.width * 100;
+    const dy = (pt.clientY - startY) / rect.height * 100;
+    f.x = Math.max(3, Math.min(97, startLeft + dx));
+    f.y = Math.max(3, Math.min(97, startTop + dy));
+    dot.style.left = f.x + '%';
+    dot.style.top = f.y + '%';
+  }
+
+  function onUp() {
+    dragging = false;
+    dot.classList.remove('dragging');
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+    window.removeEventListener('touchmove', onMove);
+    window.removeEventListener('touchend', onUp);
+  }
+
+  dot.addEventListener('mousedown', onDown);
+  dot.addEventListener('touchstart', onDown, { passive: false });
+}
+
+buildFeatureList();
+buildMatrix();
+</script>
+</body>
+</html>
