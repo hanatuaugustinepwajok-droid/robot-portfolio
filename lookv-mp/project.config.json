@@ -1,0 +1,13 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "LookV",
+  "description": "小红书进，飞书结构出",
+  "appid": "touristappid",
+  "compileType": "miniprogram",
+  "libVersion": "3.5.0",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "minified": true
+  }
+}

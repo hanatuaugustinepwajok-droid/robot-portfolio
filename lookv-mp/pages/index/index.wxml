@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="kicker">LookV</view>
+  <view class="h1">链进飞出</view>
+  <view class="lead">贴小红书链接，出飞书结构文档</view>
+  <textarea class="box" placeholder="粘贴小红书链接" value="{{url}}" bindinput="onUrl"></textarea>
+  <view class="row">
+    <button class="primary" bindtap="run" loading="{{loading}}">整理</button>
+    <button bindtap="demo">演示</button>
+  </view>
+  <view class="status {{err ? 'err' : ''}}">{{status}}</view>
+  <view class="tabs">
+    <text class="tab {{tab==='md'?'on':''}}" data-tab="md" bindtap="setTab">全文</text>
+    <text class="tab {{tab==='sum'?'on':''}}" data-tab="sum" bindtap="setTab">总结</text>
+    <text class="tab {{tab==='core'?'on':''}}" data-tab="core" bindtap="setTab">中心</text>
+  </view>
+  <scroll-view scroll-y class="preview">
+    <text selectable>{{preview}}</text>
+  </scroll-view>
+  <button class="primary" bindtap="copy">复制</button>
+</view>

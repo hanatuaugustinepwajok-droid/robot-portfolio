@@ -1,0 +1,13 @@
+{
+  "name": "LookV",
+  "short_name": "LookV",
+  "description": "小红书进，飞书结构出",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0e14",
+  "theme_color": "#0a0e14",
+  "lang": "zh-CN",
+  "icons": [
+    { "src": "/static/icon.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,15 @@
+.page{padding:28rpx 32rpx 60rpx;min-height:100vh;background:#0a0e14}
+.kicker{color:#22d3ee;font-size:22rpx;letter-spacing:4rpx;margin-bottom:12rpx}
+.h1{font-size:48rpx;font-weight:700;margin-bottom:8rpx}
+.lead{color:#8b98a9;font-size:26rpx;margin-bottom:28rpx}
+.box{width:100%;min-height:160rpx;background:#18202d;color:#e6edf3;border-radius:16rpx;padding:20rpx;font-size:28rpx;box-sizing:border-box}
+.row{display:flex;gap:16rpx;margin:20rpx 0}
+.primary{background:#22d3ee;color:#042026;font-weight:700}
+button{flex:1;font-size:28rpx}
+.status{font-size:24rpx;color:#8b98a9;min-height:40rpx}
+.err{color:#ef4444}
+.tabs{display:flex;gap:12rpx;margin:20rpx 0}
+.tab{padding:8rpx 20rpx;border:1rpx solid #334155;border-radius:999rpx;color:#8b98a9;font-size:24rpx}
+.tab.on{color:#22d3ee;border-color:#22d3ee}
+.preview{height:52vh;background:#0d1219;border-radius:16rpx;padding:24rpx;margin-bottom:20rpx}
+.preview text{white-space:pre-wrap;font-size:26rpx;line-height:1.7}

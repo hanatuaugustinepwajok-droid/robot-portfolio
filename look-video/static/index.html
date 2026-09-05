@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LookV</title>
+<link rel="manifest" href="/manifest.webmanifest" />
+<meta name="theme-color" content="#0a0e14" />
+<meta name="description" content="LookV 链进飞出：把小红书笔记整理成带逻辑总结和中心内容的文档。试用后请留一句反馈。" />
+<meta property="og:title" content="LookV · 链进飞出" />
+<meta property="og:description" content="小红书笔记进，结构文档出。点演示就能看效果。" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-title" content="LookV" />
+<link rel="icon" href="/static/icon.svg" />
+<link rel="apple-touch-icon" href="/static/icon.svg" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet" />
+<style>
+:root{
+  --bg:#0a0e14; --s:#111721; --s2:#18202d; --s3:#1f2937;
+  --bd:#26303f; --bd2:#334155;
+  --t:#e6edf3; --t2:#8b98a9; --t3:#5a6572;
+  --cyan:#22d3ee; --green:#10b981; --amber:#f59e0b; --red:#ef4444; --violet:#a78bfa;
+  --r:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:"DM Sans","Noto Sans SC",system-ui,sans-serif;line-height:1.6;min-height:100vh}
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+a{color:var(--cyan)}
+button,input,textarea,select{font-family:inherit}
+
+.hero{padding:36px 0 22px;border-bottom:1px solid var(--bd);position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-80px;left:40%;width:520px;height:220px;background:radial-gradient(ellipse,rgba(34,211,238,.12),transparent 70%);pointer-events:none}
+.kicker{display:inline-block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);border:1px solid rgba(34,211,238,.3);background:rgba(34,211,238,.07);padding:3px 11px;border-radius:99px;margin-bottom:12px}
+h1{font-family:"Noto Serif SC",serif;font-size:clamp(26px,4vw,40px);line-height:1.2;font-weight:700}
+.lead{color:var(--t2);max-width:40em;margin:10px 0 18px}
+.steps{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+@media(max-width:800px){.steps{grid-template-columns:1fr 1fr}}
+.step{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:12px 12px 11px}
+.step b{display:block;color:var(--cyan);font-size:11px;letter-spacing:.08em}
+.step span{font-size:13px;color:var(--t2)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:18px;padding:22px 0 48px}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+.card{background:var(--s);border:1px solid var(--bd);border-radius:var(--r);padding:18px}
+.card h2{font-size:15px;margin-bottom:12px}
+label{display:block;font-size:12px;color:var(--t3);margin:10px 0 6px}
+textarea,input,select{width:100%;background:var(--s2);border:1px solid var(--bd2);color:var(--t);border-radius:8px;padding:10px 12px;font-size:14px}
+textarea{min-height:110px;resize:vertical}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.btn{border:none;border-radius:8px;padding:10px 14px;font-weight:600;cursor:pointer;font-size:14px}
+.btn-primary{background:var(--cyan);color:#042026}
+.btn-ghost{background:transparent;border:1px solid var(--bd2);color:var(--t)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.hint{font-size:12px;color:var(--t3);margin-top:8px}
+.status{margin-top:10px;font-size:13px;color:var(--t2)}
+.status.err{color:var(--red)}
+.status.ok{color:var(--green)}
+
+.tabs{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.tab{background:var(--s2);border:1px solid var(--bd);color:var(--t2);border-radius:99px;padding:5px 12px;cursor:pointer;font-size:12.5px}
+.tab.on{border-color:var(--cyan);color:var(--cyan);background:rgba(34,211,238,.08)}
+.preview{background:#0d1219;border:1px solid var(--bd);border-radius:8px;padding:18px 20px;min-height:420px;max-height:70vh;overflow:auto;white-space:pre-wrap;font-size:14px;line-height:1.75}
+.preview h1,.md-view h1{font-family:"Noto Serif SC",serif;font-size:22px;margin:0 0 10px}
+.preview h2,.md-view h2{font-size:16px;color:var(--cyan);margin:18px 0 8px;border-bottom:1px solid var(--bd);padding-bottom:4px}
+.preview h3,.md-view h3{font-size:14.5px;margin:14px 0 6px;color:#dbeafe}
+.meta{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--t3);margin-bottom:8px}
+.pill{border:1px solid var(--bd2);padding:2px 8px;border-radius:99px}
+details{margin-top:12px}
+details summary{cursor:pointer;color:var(--t2);font-size:13px}
+.foot{border-top:1px solid var(--bd);padding:16px 0 40px;color:var(--t3);font-size:12px}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="wrap">
+    <div class="kicker">LookV</div>
+    <h1>链进飞出</h1>
+    <p class="lead">把小红书笔记整理成带大标题、小标题、逻辑总结和中心内容的文档。点演示就能看效果。复制后自己贴进飞书。</p>
+    <div class="steps">
+      <div class="step"><b>01</b><span>粘贴带 xsec_token 的链接</span></div>
+      <div class="step"><b>02</b><span>提取标题、正文、字幕</span></div>
+      <div class="step"><b>03</b><span>去掉英中重复和 OCR 废话</span></div>
+      <div class="step"><b>04</b><span>逻辑总结 + 中心内容</span></div>
+      <div class="step"><b>05</b><span>复制，自己贴进飞书</span></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap grid">
+  <section class="card">
+    <h2>投入</h2>
+    <label>小红书链接</label>
+    <input id="url" placeholder="https://www.xiaohongshu.com/explore/...?xsec_token=..." />
+    <label>笔记正文（链接打不开时，把原文贴这里）</label>
+    <textarea id="paste" placeholder="可选。标题、正文、口播要点都可以。"></textarea>
+    <div class="row">
+      <button class="btn btn-primary" id="run">开始整理</button>
+      <button class="btn btn-ghost" id="demo">演示</button>
+      <button class="btn btn-ghost" id="install" style="display:none">安装 App</button>
+    </div>
+    <p class="hint">图文外刊若只有标签、正文在图片里，需要登录 Cookie 才能拉到图。也可把书签 <a id="bm" href="#">导入到 LookV</a> 拖进收藏栏，在已打开的笔记页点一下。</p>
+    <div class="status" id="status"></div>
+    <details>
+      <summary>设置 · Cookie / 模型 / 飞书</summary>
+      <label>小红书 Cookie（可选）</label>
+      <textarea id="cookie" placeholder="a1=...; web_session=..."></textarea>
+      <label>大模型 API Key（可选，DeepSeek / OpenAI 兼容）</label>
+      <input id="apiKey" type="password" placeholder="sk-..." />
+      <label>API Base</label>
+      <input id="apiBase" value="https://api.deepseek.com" />
+      <label>模型名</label>
+      <input id="model" value="deepseek-chat" />
+      <label>
+        <input type="checkbox" id="push" style="width:auto" /> 本机已登录飞书时才同步（公开站已关闭）
+      </label>
+      <p class="hint" id="health"></p>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>产出</h2>
+    <div class="meta" id="meta"></div>
+    <div class="tabs">
+      <button class="tab on" data-tab="md">飞书 Markdown</button>
+      <button class="tab" data-tab="sum">逻辑总结</button>
+      <button class="tab" data-tab="core">中心内容</button>
+      <button class="tab" data-tab="raw">提取原文</button>
+    </div>
+    <div class="preview" id="preview">等待整理…</div>
+    <div class="row">
+      <button class="btn btn-ghost" id="copy">复制 Markdown</button>
+      <button class="btn btn-ghost" id="dl">下载 .md</button>
+      <button class="btn btn-ghost" id="feishu" style="display:none">同步到飞书</button>
+    </div>
+    <p class="hint" id="feishuOut"></p>
+  </section>
+</main>
+<section class="wrap" style="padding-bottom:40px">
+  <div class="card">
+    <h2>试用反馈</h2>
+    <p class="hint">产品经理周熙的公开测试。用完请留一句：卡在哪、想要什么。反馈只到作者邮箱，不会写入飞书。</p>
+    <label>打分</label>
+    <select id="fbScore">
+      <option value="5">5 能用</option>
+      <option value="4">4 还行</option>
+      <option value="3" selected>3 一般</option>
+      <option value="2">2 难用</option>
+      <option value="1">1 完全不行</option>
+    </select>
+    <label>想说的</label>
+    <textarea id="fbText" placeholder="例如：演示看得懂，但贴自己的链接打不开"></textarea>
+    <label>小红书号（选填）</label>
+    <input id="fbContact" placeholder="方便回访" />
+    <div class="row"><button class="btn btn-primary" id="fbSend">提交反馈</button></div>
+    <p class="hint" id="fbOut"></p>
+  </div>
+</section>
+<footer class="wrap foot">LookV 不编造口播。手机浏览器可「添加到主屏幕」当 App 用。</footer>
+
+<script>
+const API = window.LOOKV_API || "";
+const $ = (id) => document.getElementById(id);
+const keys = ["cookie","apiKey","apiBase","model"];
+keys.forEach(k => { const v = localStorage.getItem("lv_"+k); if (v) $(k).value = v; });
+keys.forEach(k => $(k).addEventListener("change", () => localStorage.setItem("lv_"+k, $(k).value)));
+
+let state = { markdown: "", extract: null, title: "" };
+
+function section(md, name) {
+  const re = new RegExp("##\\s*"+name+"[\\s\\S]*?(?=\\n##\\s|$)");
+  const m = md.match(re);
+  return m ? m[0].trim() : "这一节还没有。";
+}
+function render() {
+  const tab = document.querySelector(".tab.on").dataset.tab;
+  const md = state.markdown || "";
+  if (tab === "sum") $("preview").textContent = section(md, "逻辑总结");
+  else if (tab === "core") $("preview").textContent = section(md, "中心内容");
+  else if (tab === "raw") $("preview").textContent = JSON.stringify(state.extract, null, 2) || "无";
+  else $("preview").textContent = md || "等待整理…";
+}
+document.querySelectorAll(".tab").forEach(btn => {
+  btn.onclick = () => { document.querySelectorAll(".tab").forEach(b => b.classList.remove("on")); btn.classList.add("on"); render(); };
+});
+
+async function fetchApi(path, opt, ms) {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms || 20000);
+  try {
+    return await fetch(API + path, { ...(opt || {}), signal: ctrl.signal });
+  } finally { clearTimeout(t); }
+}
+
+async function health() {
+  try {
+    const r = await fetchApi("/api/health", {}, 8000);
+    const j = await r.json();
+    window._lookvApi = j && j.ok;
+    if (j.lark_cli) {
+      $("health").textContent = "本机飞书可用。公开试用默认不写入你的知识库。";
+      $("feishu").style.display = "inline-flex";
+    } else {
+      $("health").textContent = "公开试用：整理后复制 Markdown，自己贴进飞书。";
+    }
+  } catch {
+    window._lookvApi = false;
+    $("health").textContent = "当前是网页版：点演示，或把笔记正文贴进去。链接提取需等后端唤醒。";
+  }
+}
+health();
+(function () {
+  const a = $("bm");
+  if (!a) return;
+  const home = location.origin + location.pathname.replace(/index\.html$/, "");
+  a.href = "javascript:(function(){try{var h=document.documentElement.innerHTML;var m=h.match(/__INITIAL_STATE__\\s*=\\s*(\\{[\\s\\S]+?\\})\\s*<\\/script>/);if(!m)throw 0;var s=JSON.parse(m[1].replace(/undefined/g,'null'));var map=(s.note||{}).noteDetailMap||{};var first=Object.values(map)[0]||{};var n=first.note||first;var note={url:location.href,title:n.title||'',desc:n.desc||'',author:(n.user||{}).nickname||'',type:n.type||'normal'};open(" + JSON.stringify(home) + "+'?payload='+encodeURIComponent(JSON.stringify(note)));}catch(e){alert('请在已打开的小红书笔记页使用');}})();";
+})();
+
+function setStatus(msg, cls) { $("status").className = "status " + (cls||""); $("status").textContent = msg; }
+
+const DEMO = {
+  url: "https://www.xiaohongshu.com/explore/6a639a0c0000000011014718",
+  title: "华裔二代亿万富豪Lucy Guo的创业人生课",
+  author: "星野手记",
+  type: "video",
+  desc: "身高170CM，1994.10.14，加州弗里蒙特，华裔二代。CMU 计算机，Thiel Fellow 辍学。Scale AI 联合创始人，2018 退出运营但留约 3%-5% 股权；Passes 创始人。访谈要点：不是每件事都是风险；人脉是净资产；为学习优化；做联合创始人的最大支持者；去问，第一次 yes 可能改写人生。",
+  tags: ["lucyguo","passes"]
+};
+
+function localOrganize(ext) {
+  const title = ext.title || "未命名笔记";
+  const author = ext.author || "未知";
+  const ntype = ext.type === "video" ? "视频" : "图文";
+  const url = ext.url || "";
+  const desc = (ext.desc || "").trim();
+  const paras = desc.split(/\n+/).map((p) => p.trim()).filter((p) => p && !p.startsWith("#"));
+  const body = (paras.length ? paras : ["请把笔记正文贴在左侧。"]).map((p, i) => `### ${i ? "第"+(i+1)+"节" : "开篇"}\n\n${p}\n`).join("\n");
+  const summary = (paras[0] || "先看演示，再贴你自己的笔记。").slice(0, 180);
+  const cores = (paras.length > 1 ? paras.slice(-3) : paras).map((c, i) => `${i+1}. ${c.slice(0,160)}`).join("\n");
+  return `# ${title}\n\n作者：${author}　类型：${ntype}　来源：[${url}](${url})\n\n## 逻辑总结\n\n${summary}\n\n## 正文\n\n${body}\n### 收束\n\n以上为去重后的要点。\n\n## 中心内容\n\n${cores || "1. 先跑通演示，再换自己的链接。"}\n`;
+}
+
+$("demo").onclick = () => { $("url").value = DEMO.url; run({note: DEMO, url: DEMO.url}); };
+
+async function run(extra={}) {
+  setStatus("正在提取并整理…");
+  $("run").disabled = true;
+  try {
+    const note = extra.note || {
+      url: $("url").value.trim(),
+      title: $("url").value.trim().slice(-18) || "笔记",
+      desc: $("paste").value.trim(),
+      author: "",
+      type: "normal"
+    };
+    if (extra.note && $("paste").value.trim()) extra.note.desc = extra.note.desc + "\n" + $("paste").value.trim();
+    const body = {
+      url: $("url").value.trim(),
+      cookie: $("cookie") ? $("cookie").value.trim() : "",
+      api_key: $("apiKey") ? $("apiKey").value.trim() : "",
+      api_base: $("apiBase") ? $("apiBase").value.trim() : "",
+      model: $("model") ? $("model").value.trim() : "",
+      push_feishu: false,
+      ...extra
+    };
+    let usedApi = false;
+    try {
+      const r = await fetchApi("/api/run", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) }, 75000);
+      const j = await r.json();
+      if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : (j.detail?.[0]?.msg || JSON.stringify(j)));
+      state = j;
+      usedApi = true;
+      window._lookvApi = true;
+    } catch (apiErr) {
+      if (usedApi) throw apiErr;
+    }
+    if (!usedApi) {
+      const ext = extra.note || note;
+      if (!(ext.desc || "").trim() && !(extra.note)) throw new Error("公开网页版请先点「演示」，或把笔记正文贴在上面。");
+      const md = localOrganize(ext);
+      state = { markdown: md, extract: ext, title: ext.title || "笔记" };
+    }
+    $("meta").innerHTML = `<span class="pill">${state.title||""}</span>` + (state.extract?.author ? `<span class="pill">${state.extract.author}</span>` : "");
+    render();
+    setStatus("整理完成。复制后可以贴进飞书。", "ok");
+  } catch (e) {
+    setStatus(e.message || String(e), "err");
+  } finally { $("run").disabled = false; }
+}
+$("run").onclick = () => run();
+$("fbSend").onclick = async () => {
+  const payload = { score: $("fbScore").value, text: $("fbText").value.trim(), contact: $("fbContact").value.trim() };
+  if (!payload.text) { $("fbOut").textContent = "请写一句反馈。"; return; }
+  try {
+    let ok = false;
+    try {
+      const r = await fetchApi("/api/feedback", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(payload) }, 12000);
+      if (r.ok) ok = true;
+    } catch {}
+    try {
+      const r2 = await fetch("https://formsubmit.co/ajax/3462579788@qq.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ _subject: "LookV 产品反馈", _captcha: "false", ...payload })
+      });
+      if (r2.ok) ok = true;
+    } catch {}
+    if (!ok) throw new Error("提交失败");
+    $("fbOut").textContent = "收到了，谢谢。";
+    $("fbText").value = "";
+  } catch {
+    const q = encodeURIComponent(`LookV反馈 ${payload.score}分\n${payload.text}\n${payload.contact}`);
+    location.href = `mailto:3462579788@qq.com?subject=LookV反馈&body=${q}`;
+  }
+};
+
+$("copy").onclick = async () => {
+  if (!state.markdown) return;
+  await navigator.clipboard.writeText(state.markdown);
+  setStatus("已复制 Markdown。", "ok");
+};
+$("dl").onclick = () => {
+  if (!state.markdown) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([state.markdown], {type:"text/markdown"}));
+      a.download = (state.title || "lookv") + ".md";
+  a.click();
+};
+$("feishu").onclick = async () => {
+  if (!state.markdown) return;
+  setStatus("正在写入飞书…");
+  try {
+    const r = await fetchApi("/api/feishu", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title: state.title, markdown: state.markdown }) }, 30000);
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.detail || JSON.stringify(j));
+    $("feishuOut").innerHTML = j.url ? `已写入飞书：<a href="${j.url}" target="_blank">${j.url}</a>` : "已提交飞书。";
+    setStatus("飞书同步完成。", "ok");
+  } catch (e) { setStatus(e.message, "err"); }
+};
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register(new URL("sw.js", location.href));
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  const b = $('install');
+  if (b) b.style.display = 'inline-flex';
+});
+$('install') && ($('install').onclick = async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt = null;
+  $('install').style.display = 'none';
+});
+const params = new URLSearchParams(location.search);
+if (params.get("payload")) {
+  try {
+    const note = JSON.parse(decodeURIComponent(params.get("payload")));
+    $("url").value = note.url || "";
+    run({ note, url: note.url || "" });
+  } catch {}
+}
+</script>
+</body>
+</html>
