@@ -265,16 +265,19 @@ async function run(extra={}) {
       push_feishu: false,
       ...extra
     };
+    const hasLocal = !!(extra.note || ($("paste").value || "").trim());
     let usedApi = false;
-    try {
-      const r = await fetchApi("/api/run", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) }, 75000);
-      const j = await r.json();
-      if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : (j.detail?.[0]?.msg || JSON.stringify(j)));
-      state = j;
-      usedApi = true;
-      window._lookvApi = true;
-    } catch (apiErr) {
-      if (usedApi) throw apiErr;
+    if (window._lookvApi || (body.url && !hasLocal)) {
+      try {
+        const r = await fetchApi("/api/run", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(body) }, window._lookvApi ? 75000 : 12000);
+        const j = await r.json();
+        if (!r.ok) throw new Error(typeof j.detail === "string" ? j.detail : (j.detail?.[0]?.msg || JSON.stringify(j)));
+        state = j;
+        usedApi = true;
+        window._lookvApi = true;
+      } catch (apiErr) {
+        if (!hasLocal) throw apiErr;
+      }
     }
     if (!usedApi) {
       const ext = extra.note || note;
