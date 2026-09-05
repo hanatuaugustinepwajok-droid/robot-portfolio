@@ -14,7 +14,7 @@ pinned: false
 
 ## 公开地址
 
-- 长期网页（GitHub Pages，电脑关机也在）：仓库 Settings → Pages → Deploy from `docs/`
+- 长期网页（电脑关机也在）：https://hanatuaugustinepwajok-droid.github.io/robot-portfolio/lookv/
 - 带提取接口的短域名（Render 免费）：**https://lookv.onrender.com**
   1. 打开 https://render.com 用 GitHub 登录
   2. New → Blueprint，选这个仓库，应用根目录的 `render.yaml`
